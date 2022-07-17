@@ -9,3 +9,4 @@ DATA_DIR = os.path.expanduser('~/.tf2-crosshair-switcher/')
 DATA_FILE_PATH: "{}/.data.txt".format(DATA_DIR)
 LOGS_PATH = "xhs_logs.txt"
 XHAIR_PREVIEW_PATH = "{}/preview/"  # Format with materials directory
+XHAIR_PREVIEW_BG = '#aaa'

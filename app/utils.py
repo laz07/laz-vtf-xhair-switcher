@@ -44,17 +44,42 @@ def read_cfgs(dirname):
 
   return res
 
+def get_xhairs(path):
+  if not os.path.isdir(path):
+      return []
+
+  files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+
+  return [{ "path": os.path.join(path, x), "name": x[:-4] } for x in list(filter(lambda x: x.endswith(".vtf"), files))]
+
+
 def get_xhair_from_cfg(cfg):
   return cfg["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split('/')[-1]
+
+def change_xhair_in_cfg(cfg, xhair):
+  cfg["WeaponData"]["TextureData"]["\"crosshair\""]["file"] = "vgui/replay/thumbnails/{}".format(xhair)
+
+def write_cfg(lines, cfg_path, xhair):
+  xhair_path = os.path.join(cfg_path, "scripts", "{}.txt".format(xhair))
+
+  if not os.path.exists(xhair_path):
+    return
+
+  with open(xhair_path, 'w') as f:
+    f.close()
+
+  with open(xhair_path, 'a') as f:
+    for line in lines:
+      f.write(line)
 
 def initialize_local_storage():
     # Initialize local storage directory
     if not os.path.isdir(DATA_DIR):
-        os.mkdir(DATA_DIR)
+      os.mkdir(DATA_DIR)
 
-    display_path = "{}/display".format(DATA_DIR)
-    if not os.path.isdir(display_path):
-      os.mkdir(display_path)
+    preview_path = "{}/previews".format(DATA_DIR)
+    if not os.path.isdir(preview_path):
+      os.mkdir(preview_path)
 
 # Prepare entries for display by filtering out any extra files and sorting
 def prepare_entries(path):

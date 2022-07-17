@@ -43,7 +43,7 @@ def get_submap(cfg, start_index):
 
 class CfgParser:
   def __init__(self):
-    self.cfgs = {}
+    self.cfgs = OrderedDict()
 
   def parse_cfg(self, cfg):
     data_map = OrderedDict()

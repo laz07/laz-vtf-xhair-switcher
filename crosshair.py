@@ -1,12 +1,16 @@
 # VTF crosshair switcher, v1.2, by laz
 import os
 import sys
+import ctypes
 
 sys.path.append(os.path.abspath('/app'))
 sys.path.append(os.path.abspath('/app/ui'))
 
 from app.utils import initialize_local_storage
 from app.ui.main import show_app
+
+myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 # Decide on which frame to show based on the user's saved settings and
 # whether the relevant folders exist and aren't empty
