@@ -1,3 +1,5 @@
+# VTF crosshair switcher, v1.2, by laz
+
 import re
 import wx
 import wx.lib.mixins.listctrl
@@ -11,6 +13,8 @@ from associations import *
 from collections import OrderedDict
 
 
+# generate a (probably) unique hash to append to the
+# backup folders' names to give each folder a unique name
 def gen_hash():
     import hashlib
     import time
@@ -55,9 +59,11 @@ ui = {
     "parse_error_msg": "Error parsing some crosshair scripts. \n Error in file {} \n Please double check that your scripts are valid"
 }
 
+# use a global to track the last parsed file before exception
 debug_lastfile = ""
 
 
+# mixin to ensure columns cannot be resized past the viewport
 class FixedWidthListCtrl(wx.ListCtrl, wx.lib.mixins.listctrl.ListCtrlAutoWidthMixin):
     def __init__(self, parent, ID, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, style=0):
@@ -215,7 +221,6 @@ class CrosshairFrame(wx.Frame):
     # Logs
 
     # Add a log with a timestamp and show in logger
-
     def logs_add(self, item):
         now = datetime.datetime.now()
         time = [now.hour, now.minute, now.second]
@@ -258,6 +263,8 @@ class CrosshairFrame(wx.Frame):
             self.btn_apply_all.Disable()
 
 
+    # read files from a pre-generated png thumbnail folder to display
+    # not fully implemented yet (still working on generating those pngs)
     def draw_crosshair(self):
         if len(self.cur_entries) > 1:
             return
@@ -276,7 +283,6 @@ class CrosshairFrame(wx.Frame):
                 pass
 
     # Populate list box with weapon
-
     def populate_list(self):
         sort_entries(self.entries, self.weapon_list_sort)
 
@@ -284,12 +290,6 @@ class CrosshairFrame(wx.Frame):
         self.weapon_list.InsertColumn(0, "Weapon", width=200)
         self.weapon_list.InsertColumn(
             1, "Crosshair", wx.LIST_FORMAT_RIGHT, width=200)
-
-        # Get the longest label so that the (crosshair) display can be positioned correctly
-        def label_len(x): return len(x["name"] if options["weapon_display_type"]
-                                     else "{}: {}".format(weapon_associations[x["name"]]["class"], weapon_associations[x["name"]]["display"]))
-        longest = label_len(functools.reduce(lambda x, y: (
-            x if label_len(x) > label_len(y) else y), self.entries))
 
         for x in self.entries:
             label = x["name"] if options["weapon_display_type"] else "{}: {}".format(
@@ -299,7 +299,7 @@ class CrosshairFrame(wx.Frame):
 
         self.weapon_list.EnsureVisible(self.last_selection)
 
-
+    # copy all script files to the backup folder
     def backup_scripts(self):
         backup_path = constants["backup_folder_path"].format(options["scripts_path"])
 
@@ -321,7 +321,7 @@ class CrosshairFrame(wx.Frame):
             self.logs_add("Backed up {} to folder {}".format(file,
                                                                constants["backup_folder_path"].format(options["scripts_path"])))
 
-
+    # on-click for the 4 apply buttons
     def btn_apply_clicked(self, event):
         label = event.GetEventObject().GetLabel()
 
@@ -356,6 +356,7 @@ class CrosshairFrame(wx.Frame):
                 change_entry(entry)
 
         elif label == ui["btn_apply_class"]:
+            # filter out weapons with different classes
             class_name = weapon_associations[self.cur_entries[0]
                                              ["name"]]["class"]
             included_names = {k: v for (k, v) in weapon_associations.items(
@@ -366,6 +367,7 @@ class CrosshairFrame(wx.Frame):
             for entry in included_entries:
                 change_entry(entry)
         elif label == ui["btn_apply_slot"]:
+            # filter out entries with different slots
             slot = weapon_associations[self.cur_entries[0]["name"]]["slot"]
             included_names = {
                 k: v for (k, v) in weapon_associations.items() if v["slot"] == slot}.keys()
@@ -380,18 +382,20 @@ class CrosshairFrame(wx.Frame):
 
         self.populate_list()
 
+
     def checkbox_clicked(self, event):
         checked = True if event.GetInt() == 1 else False
         label = event.GetEventObject().GetLabel()
 
         if label == ui["chk_display_toggle"]:
             options["weapon_display_type"] = checked
-            self.entries = build_entries()
+            self.entries = prepare_entries()
             self.populate_list()
         elif label == ui["chk_backup_scripts"]:
             options["backup_scripts"] = checked
 
         persist_options()
+
 
     def on_list_select(self, event):
         self.weapon_list.setResizeColumn(0)
@@ -484,8 +488,10 @@ class CrosshairFrame(wx.Frame):
                 self.btn_apply_slot.Disable()
 
             self.last_selection = selected[0]
-        self.text.ScrollPages(-100)
 
+        self.text.ScrollPages(-100) # hacky way to scroll to the top of the text control
+
+    # column header on click
     def col_click(self, event):
         col = event.GetColumn()
         cur = self.weapon_list_sort[col]
@@ -661,8 +667,10 @@ def parse_cfg(lines):
         elif it < len(lines) - 2:
             header_match = re.search(re_header, ln)
 
+            # found a header and a bracket on the next line, expect a sub map
             if header_match and re.search(re_bracket_open, lines[it+1]):
-                header = "WeaponData" if "WeaponData" in header_match.group(1) else header_match.group(1)
+                # hack to ensure that "fWeaponData" or similar is still matched as a header
+                header = "WeaponData" if "WeaponData" in header_match.group(1) else header_match.group(1) 
                 submap = get_submap(it+2)
 
                 data_map[header] = parse_cfg(submap)
@@ -673,8 +681,6 @@ def parse_cfg(lines):
     return data_map
 
 # Reconstruct line-by-line CFG from the OrderedDict representation
-
-
 def reconstruct_cfg(data_map, indent=0):
     lines = []
 
@@ -711,7 +717,7 @@ def write_cfg(path, lines):
 
 # Build list of data structures containing key information about each weapon
 # Each entry includes the file path, the weapon class name, and the parsed file contents
-def get_weapons():
+def build_entries():
     global debug_lastfile
     files = [f for f in os.listdir(options["scripts_path"]) if os.path.isfile(
         os.path.join(options["scripts_path"], f))]
@@ -739,7 +745,9 @@ def get_weapons():
 
     return data
 
-
+# Sort entries, sort_arr is a list with two values, either -1, 0, 1,
+# indicating which column to sort by and whether to sort ascending
+# or descending
 def sort_entries(entries, sort_arr):
     which = sort_arr[0] == 0
     direction = sort_arr[1 if which else 0] < 0
@@ -775,10 +783,8 @@ def sort_entries(entries, sort_arr):
 
 
 # Prepare entries for display by filtering out any extra files and sorting
-# If display by category is enabled, sort by Class index, then alphabetically
-# If display by weapon class is enabled, simply sort alphabetically
-def build_entries():
-    weps = get_weapons()
+def prepare_entries():
+    weps = build_entries()
 
     entries = [x for x in weps if x["name"] in weapon_associations]
 
@@ -795,6 +801,8 @@ def get_crosshairs():
     return [x[:-4] for x in list(filter(lambda x: x.endswith(".vtf"), files))]
 
 
+# ensure that the two relevant folders (scripts and materials/vgui/replay/thumbnails)
+# exist and aren't empty
 def check_folders(spath, mpath):
     scripts_path = spath
     xhair_path = "{}/vgui/replay/thumbnails".format(mpath)
@@ -805,17 +813,20 @@ def check_folders(spath, mpath):
         and len(os.listdir(xhair_path)) > 0
 
 
+
+## functions for persisting options between program runs
+## by default save a text file with a json representation
+## of the options to the user's home directory
+
 def persist_options():
     with open(constants["data_dir"], "w") as f:
         f.write(json.dumps(options))
-
 
 def clear_persisted_options():
     global options
     open(constants["data_dir"], "w").close()
 
     options = constants["defaults"].copy()
-
 
 def retrieve_persisted_options():
     global options
@@ -831,6 +842,9 @@ def retrieve_persisted_options():
         options = data
 
 
+
+# Decide on which frame to show based on the user's saved settings and
+# whether the relevant folders exist and aren't empty
 def handle_frame_type():
     retrieve_persisted_options()
     # Paths in persisted data are correct (these take precedence)
@@ -852,7 +866,7 @@ def handle_frame_type():
 def make_frame(type):
     if type:
         try:
-            entries = build_entries()
+            entries = prepare_entries()
             CrosshairFrame(None, "VTF Crosshair Changer", constants["window_size"], entries)
         except:
             ErrorFrame(None, "Error", constants["error_window_size"], ui["parse_error_msg"].format(debug_lastfile if len(debug_lastfile) > 0 else "<None>"))
