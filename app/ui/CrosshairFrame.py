@@ -55,6 +55,12 @@ class CrosshairFrame(wx.Frame):
             display_path = format_path_by_os(os.path.abspath(get_xhairs_path()))
             self.logs_add("Crosshairs being read from {}".format(display_path))
 
+        if len(self.entries) == 0:
+            self.logs_add("Error loading scripts. Does the folder you selected have a scripts/ folder?")
+
+        if len(self.xhairs) == 0:
+            self.logs_add("Error loading crosshairs. Does the folder you selected have a materials/vgui/replay/thumbnails/ folder?")
+
 
     def setup_menu_bar(self):
         self.menu_bar = wx.MenuBar()
@@ -513,7 +519,6 @@ class CrosshairFrame(wx.Frame):
         self.cur_xhair = ""
         self.xhairs = get_crosshairs()
         self.SetMinSize(cn["ui"]["window_size_min"])
-
 
         # Main panel
         self.main_panel = wx.Panel(self)

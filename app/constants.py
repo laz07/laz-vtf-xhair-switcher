@@ -74,7 +74,7 @@ cn = {
         "window_size_options": (500, 150),
         "window_size_min": (900, 500),
         "window_size_options_frame": (500, 135),
-        "window_size_info_frame": (500, 150),
+        "window_size_info_frame": (500, 135),
         "window_size_crosshair_image_frame": (500, 135),
         "window_size_about_frame": (500, 135),
 
