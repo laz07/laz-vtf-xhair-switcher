@@ -1,0 +1,6 @@
+RE_WEAPON = r'^(tf_weapon_[a-zA-Z_]+)\.txt$'
+RE_HEADER = r'^\s*(\"?[a-zA-Z0-9\_\.\#]+\"?)\s*({)?$'
+RE_DATA = r'^\s*\"\s*(\S+)\s*\"\s+\"\s*(\S+)\s*\"\s*$'
+RE_BRACKET_OPEN = r'^\s*{\s*$'
+RE_BRACKET_CLOSE = r'^\s*}\s*$'
+RE_COMMENT = r'^\s*\/\/(.+)$'
