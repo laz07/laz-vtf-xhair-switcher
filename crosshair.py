@@ -129,7 +129,7 @@ class CrosshairFrame(wx.Frame):
         self.btn_apply_slot.Bind(wx.EVT_BUTTON, self.btn_apply_clicked)
         self.btn_apply_all.Bind(wx.EVT_BUTTON, self.btn_apply_clicked)
 
-        box_buttons.Add(self.xhair_choice)
+        box_buttons.Add(self.xhair_choice, wx.SizerFlags().Border(wx.TOP, 10))
         box_buttons.Add(self.btn_apply)
         box_buttons.Add(self.btn_apply_class)
         box_buttons.Add(self.btn_apply_slot)
@@ -180,8 +180,8 @@ class CrosshairFrame(wx.Frame):
         box_opts.Add(self.checkbox_backup)
         box_opts.Add(self.btn_change_folders)
 
-        box_bottom.Add(self.logger, wx.SizerFlags().Expand().Proportion(70))
-        box_bottom.Add(box_opts, wx.SizerFlags().Expand().Proportion(30))
+        box_bottom.Add(self.logger, wx.SizerFlags().Expand().Proportion(70).Border(wx.ALL, 10))
+        box_bottom.Add(box_opts, wx.SizerFlags().Expand().Proportion(30).Border(wx.ALL, 10))
 
         box_main.Add(box_weapon, wx.SizerFlags().Expand().Proportion(70))
         box_main.Add(box_bottom, wx.SizerFlags(
