@@ -24,6 +24,8 @@ options = {
 	"backup_scripts": False,
 	"backup_folder_path": "scripts/backup_{}".format(gen_hash()),
 	"weapon_display_type": False,
+	"min_window_size": (600, 400),
+	"font_size": 8
 }
 
 ui = {
@@ -40,17 +42,16 @@ ui = {
 # Main GUI frame
 class CrosshairFrame(wx.Frame):
 	def __init__(self, parent, title, size, entries):
-		super(CrosshairFrame, self).__init__(parent, title = title, size = size, style=wx.DEFAULT_FRAME_STYLE ^ wx.RESIZE_BORDER)
+		super(CrosshairFrame, self).__init__(parent, title = title, size = size, style=wx.DEFAULT_FRAME_STYLE)
 		# Setup
-		self.SetIcon(wx.Icon("xhair.ico"))
+		# self.SetIcon(wx.Icon("xhair.ico"))
 
 		self.entries = entries
-		self.cur_entry = {}
+		self.cur_entries = []
 		self.cur_xhair = ""
 		self.xhairs = get_crosshairs()
 
-		self.SetMaxSize(size)
-		self.SetMinSize(size)
+		self.SetMinSize(options["min_window_size"])
 
 
 		# Main panel
@@ -80,15 +81,15 @@ class CrosshairFrame(wx.Frame):
 		# Initialize controls for top layout
 
 		# Top-left weapon list panel
-		self.list_box = wx.ListBox(self.main_panel, size = (300,-1), choices = [], style = wx.LB_SINGLE)
-		self.list_box.SetFont(wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
+		self.list_box = wx.ListBox(self.main_panel, size = (300,-1), choices = [], style = wx.LB_EXTENDED)
+		self.list_box.SetFont(wx.Font(options["font_size"], wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
 		self.Bind(wx.EVT_LISTBOX, self.on_list_box, self.list_box)
 		self.populate_list()
 
 		# Top-right weapon info text panel 
 		self.text = wx.TextCtrl(self.main_panel, style = wx.TE_MULTILINE | wx.TE_READONLY)
 		self.text.Bind(wx.EVT_KEY_DOWN, self.disable_textctrl_input)
-		self.text.SetFont(wx.Font(11, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
+		self.text.SetFont(wx.Font(options["font_size"], wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
 
 		# Actions in right panel under info (xhair select, buttons)
 		self.xhair_choice = wx.Choice(self.main_panel, choices = self.xhairs)
@@ -132,7 +133,7 @@ class CrosshairFrame(wx.Frame):
 		# Bottom-left logging panel
 		self.logger = wx.TextCtrl(self.main_panel, style = wx.TE_MULTILINE | wx.TE_READONLY)
 		self.logger.AppendText("LOGS:\n")
-		self.logger.SetFont(wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.BOLD))
+		self.logger.SetFont(wx.Font(options["font_size"], wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.BOLD))
 		self.logger.Bind(wx.EVT_KEY_DOWN, self.disable_textctrl_input)
 
 		self.logs = []
@@ -255,7 +256,7 @@ class CrosshairFrame(wx.Frame):
 	def button_clicked(self, event):
 		label = event.GetEventObject().GetLabel()
 
-		if len(self.cur_entry) == 0:
+		if len(self.cur_entries) == 0:
 			return
 
 		cur_xhair = self.xhair_choice.GetString(self.xhair_choice.GetSelection())
@@ -273,21 +274,22 @@ class CrosshairFrame(wx.Frame):
 				write_cfg(entry["path"], out)
 				self.logs_add("{} changed from {} to {}".format(entry["name"], old_xhair, cur_xhair))
 
-
 		if options["backup_scripts"]:
 			self.backup_scripts()
 
 		if label == ui["btn_apply"]:
-			change_entry(self.cur_entry)
+			for entry in self.cur_entries:
+				change_entry(entry)
+
 		elif label == ui["btn_apply_class"]:
-			class_name = weapon_associations[self.cur_entry["name"]]["class"]
+			class_name = weapon_associations[self.cur_entries[0]["name"]]["class"]
 			included_names = { k:v for (k,v) in weapon_associations.items() if v["class"] == class_name }.keys()
 			included_entries = filter(lambda x: x["name"] in included_names, self.entries)
 
 			for entry in included_entries:
 				change_entry(entry)
 		elif label == ui["btn_apply_slot"]:
-			slot = weapon_associations[self.cur_entry["name"]]["slot"]
+			slot = weapon_associations[self.cur_entries[0]["name"]]["slot"]
 			included_names = { k:v for (k,v) in weapon_associations.items() if v["slot"] == slot }.keys()
 			included_entries = filter(lambda x: x["name"] in included_names, self.entries)
 
@@ -312,29 +314,72 @@ class CrosshairFrame(wx.Frame):
 			options["backup_scripts"] = checked
 
 	def on_list_box(self, event):
-		entry = self.entries[event.GetSelection()]
-		asc = weapon_associations[entry["name"]]
+		display = { "classes": [], "weapons": [], "categories": [], "affected": []}
+
+		self.cur_entries = []
+
+		for i in self.list_box.GetSelections():
+			entry = self.entries[i]
+			asc = weapon_associations[entry["name"]]
+
+			asc["class"] not in display["classes"] and display["classes"].append(asc["class"])
+			display["weapons"].append(entry["name"])
+			asc["display"] not in display["categories"] and display["categories"].append(asc["display"])
+
+			for item in asc["all"]:
+				item not in display["affected"] and display["affected"].append(item)
+
+
+			self.cur_entries.append(list(filter(lambda x: x["name"] == entry["name"], self.entries))[0])
+			cur_xhair = self.cur_entries[-1]["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split("/")[-1]
+
+			self.xhair_choice.SetSelection(self.xhairs.index(cur_xhair))
+			self.toggle_controls(True)
 
 		def addText(text, color):
 			self.text.SetDefaultStyle(wx.TextAttr(color)) # doesnt work on windows? very unfortunate
 			self.text.AppendText(text)
 
 		self.text.SetValue("")
-		addText("Class: ", wx.BLUE)
-		addText("{}\n".format(asc["class"]), wx.BLACK)
-		addText("Weapon Class: ", wx.BLUE)
-		addText("{}\n".format(entry["name"]), wx.BLACK)
-		addText("Category: ", wx.BLUE)
-		addText("{}\n\n".format(asc["display"]), wx.BLACK)
+
+		if len(self.list_box.GetSelections()) > 1:
+			addText("<multiple>\n", wx.BLACK)
+
+		addText("Class{}: ".format("es" if len(display["classes"]) > 1 else ""), wx.BLUE)
+		addText("{}\n\n".format(", ".join(display["classes"])), wx.BLACK)
+
+		addText("Weapon Class{}: ".format("es" if len(display["weapons"]) > 1 else ""), wx.BLUE)
+		addText("{}\n\n".format(", ".join(display["weapons"])), wx.BLACK)
+
+		addText("Categor{}: ".format("ies" if len(display["categories"]) > 1 else "y"), wx.BLUE)
+		addText("{}\n\n".format(", ".join(display["categories"])), wx.BLACK)
+
+		addText("Slot: ", wx.BLUE)
+
+		if len(self.list_box.GetSelections()) > 1:
+			addText("<multiple>\n\n", wx.BLACK)
+		else:
+			addText("{}\n\n".format({1: "Primary", 2: "Secondary", 3: "Melee", 4: "PDA"}[weapon_associations[self.cur_entries[0]["name"]]["slot"]]), wx.BLACK)
+
 		addText("Affected Weapons:\n", wx.BLUE)
-		for item in asc["all"]:
-			addText("{}\n".format(item), wx.BLACK)
+		addText("\n".join(display["affected"]), wx.BLACK)
 
-		self.cur_entry = list(filter(lambda x: x["name"] == entry["name"], self.entries))[0]
-		cur_xhair = self.cur_entry["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split("/")[-1]
+		if len(self.cur_entries) > 0:
+			def entries_homogeneous(field):
+				fil = filter(lambda x: weapon_associations[x["name"]][field] == weapon_associations[self.cur_entries[0]["name"]][field], self.cur_entries)
+				return len(list(fil)) == len(self.cur_entries)
 
-		self.xhair_choice.SetSelection(self.xhairs.index(cur_xhair))
-		self.toggle_controls(True)
+			if entries_homogeneous("class"):
+				self.dup_class_button.Enable()
+			else:
+				self.dup_class_button.Disable()
+
+			if entries_homogeneous("slot"):
+				self.dup_slot_button.Enable()
+			else:
+				self.dup_slot_button.Disable()
+
+		self.text.ScrollPages(-100)
 
 # wxPython popup frame to show when one of the two necessary folders is not present
 class ErrorFrame(wx.Frame):
@@ -348,10 +393,10 @@ class ErrorFrame(wx.Frame):
         self.errortext = wx.StaticText(panel, style = wx.ALIGN_CENTRE_HORIZONTAL | wx.TE_MULTILINE)
         self.errortext.SetLabel(errtext)
         self.errortext.SetForegroundColour((255,0,0))
-        font = wx.Font(14, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        font = wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD)
         self.errortext.SetFont(font)
 
-        self.closebutton = wx.Button(panel, style = wx.ALIGN_CENTRE_HORIZONTAL)
+        self.closebutton = wx.Button(panel)
         self.closebutton.SetLabel("Close")
         self.closebutton.Bind(wx.EVT_BUTTON, self.closeClick)
         box.Add(self.errortext, wx.EXPAND, wx.EXPAND)
@@ -532,9 +577,6 @@ if __name__ == "__main__":
 		not os.path.isdir(options["xhair_path"]) or \
 		len(os.listdir(options["scripts_path"])) == 0 or \
 		len(os.listdir(options["xhair_path"])) == 0:
-		print(os.listdir(options["scripts_path"]))
-		print(os.listdir(options["xhair_path"]))
-
 		ErrorFrame(None, "Error", (600, 150), ui["error_msg"])
 	else:
 		entries = build_entries()
