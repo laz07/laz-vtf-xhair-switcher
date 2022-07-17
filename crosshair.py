@@ -27,8 +27,10 @@ constants = {
     "min_window_size": (600, 400),
     "font_size": 8,
     "data_dir": os.path.expanduser('~/.crosshair-data.txt'),
-    "logs_path": "xhs_logs.txt"
+    "logs_path": "xhs_logs.txt",
+    "xhair_preview_path": "{}/preview/" # Format with materials directory 
 }
+
 options = {
     "materials_path": constants["default_materials_path"],
     "scripts_path": constants["default_scripts_path"],
@@ -243,8 +245,21 @@ class CrosshairFrame(wx.Frame):
             self.btn_apply_slot.Disable()
 
     def draw_crosshair(self):
-        #stub, todo
-        pass
+        if len(self.cur_entries) > 1:
+            return
+
+        preview_dir = constants["xhair_preview_path"].format("{}/vgui/replay/thumbnails/".format(options["materials_path"]))
+        
+        if not os.path.isdir(preview_dir) or len(os.listdir(preview_dir) == 0)
+            return
+
+        for img in os.listdir(preview_dir):
+            name = img.split(".")[0]
+
+            if self.cur_entries[0]["xhair"] == name:
+                # SET IMAGE IN self.xhair_preview
+                pass
+
 
     # Populate list box with weapon
     def populate_list(self):
