@@ -70,7 +70,7 @@ class CrosshairFrame(wx.Frame):
 		# Initialize controls for top layout
 
 		self.list_box = wx.ListBox(panel, size = (300,-1), choices = [], style = wx.LB_SINGLE)
-		self.list_box.SetFont(wx.Font(11, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
+		self.list_box.SetFont(wx.Font(10, wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
 		self.populate_list()
 
 
@@ -337,8 +337,8 @@ def parse_cfg(lines):
 	if len(lines) < 2:
 		return {}
 
-	re_header = "\s*(\"?.+\"?)\s*"
-	re_data = "\s*\"(.+)\"\s*\"(.+)\"\s*"
+	re_header = "^\s*(\"?[^\s]+\"?)\s*$"
+	re_data = "^\s*([^\s]+)\s+([^\s]+)\s*$"
 	re_bracket_open = "\s*{\s*"
 	re_bracket_close = "\s*}\s*"
 	re_comment = "\s*\/\/(.+)"
@@ -369,14 +369,16 @@ def parse_cfg(lines):
 		data = re.search(re_data, ln)
 		cmt = re.search(re_comment, ln)
 
-		# Insert data into map
-		if data:
-			data_map[data.group(1)] = data.group(2)
-
 		# Insert comment into map with special #comment_0 key format
-		elif cmt:
+		if cmt:
 			data_map["#comment_{}".format(cmts)] = cmt.group(1)
 			cmts += 1
+			
+		# Insert data into map
+		elif data:
+			data_map[data.group(1).strip("\"")] = data.group(2).strip("\"")
+
+
 
 		# Found a nested map structure, recurse and increment "it" past the sub map
 		elif it < len(lines) - 2 and re.search(re_header, ln) and re.search(re_bracket_open, lines[it+1]):
@@ -408,7 +410,7 @@ def reconstruct_cfg(data_map, indent=0):
 			# If the key/value pair indicates a comment, insert a newline and then the comment
 			if re.search(re_comment, key):
 				lines.append("\n")
-				lines.append("{}\\\\ {}\n".format('\t'*indent, value))
+				lines.append("{}// {}\n".format('\t'*indent, value))
 			# Else insert the data in the correct format
 			else:
 				lines.append("{}\"{}\"\t\"{}\"\n".format('\t'*indent, key, value))
@@ -495,6 +497,6 @@ if __name__ == "__main__":
 		ErrorFrame(None, "Error", (600, 150), "Either scripts or thumbnails folder is missing\nCheck that, relative to this file, the following paths exist and aren't empty:\n/scripts/\n/materials/vgui/replay/thumbnails/")
 	else:
 		entries = build_entries()
-		CrosshairFrame(None, "VTF Crosshair Changer", (750, 600), entries)
+		CrosshairFrame(None, "VTF Crosshair Changer", (850, 600), entries)
 
 	a.MainLoop()
