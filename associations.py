@@ -597,7 +597,7 @@ weapon_associations = {
 			"Shooting Star"
 		]
 	},
-	"tf_weapon_sniperrifle": {
+	"tf_weapon_compound_bow": {
 		"class": "Sniper",
 		"slot": 1,
 		"display": "Bows",
