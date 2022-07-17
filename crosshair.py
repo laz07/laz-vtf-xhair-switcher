@@ -250,7 +250,7 @@ class CrosshairFrame(wx.Frame):
 
         preview_dir = constants["xhair_preview_path"].format("{}/vgui/replay/thumbnails/".format(options["materials_path"]))
         
-        if not os.path.isdir(preview_dir) or len(os.listdir(preview_dir) == 0)
+        if not os.path.isdir(preview_dir) or len(os.listdir(preview_dir) == 0):
             return
 
         for img in os.listdir(preview_dir):
