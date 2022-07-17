@@ -32,7 +32,8 @@ constants = {
     "default_scripts_path": "scripts",
     "backup_folder_path": "{}/backup_" + gen_hash(),
     "window_size": (950, 600),
-    "error_window_size": (600, 250),
+    "error_window_size": (500, 150),
+    "folder_select_window_size": (600, 250),
     "min_window_size": (700, 500),
     "font_size": 8,
     "data_dir": os.path.expanduser('~/.crosshair-data.txt'),
@@ -50,8 +51,11 @@ ui = {
     "btn_change_folders": "Change scanned folders",
     "chk_display_toggle": "Toggle display type",
     "chk_backup_scripts": "Backup scripts before modifying",
-    "error_msg": "Either scripts or thumbnails folder is missing or invalid\nPlease indicate their location below"
+    "invalid_folder_msg": "Either scripts or thumbnails folder is missing or invalid\nPlease indicate their location below",
+    "parse_error_msg": "Error parsing some crosshair scripts. \n Error in file {} \n Please double check that your scripts are valid"
 }
+
+debug_lastfile = ""
 
 
 class FixedWidthListCtrl(wx.ListCtrl, wx.lib.mixins.listctrl.ListCtrlAutoWidthMixin):
@@ -575,6 +579,35 @@ class DirPickerFrame(wx.Frame):
     def scripts_picker_changed(self, event):
         self.path_changed(1, event.GetPath())
 
+# Generic Error Frame
+class ErrorFrame(wx.Frame):
+    def __init__(self, parent, title, size, errtext):
+        super(ErrorFrame, self).__init__(parent, title=title, size=size)
+        self.SetMinSize(size)
+
+        panel = wx.Panel(self)
+        box = wx.BoxSizer(wx.VERTICAL)
+
+        errortext = wx.StaticText(
+            panel, style=wx.ALIGN_CENTRE_HORIZONTAL | wx.TE_MULTILINE)
+        errortext.SetLabel(errtext)
+        errortext.SetForegroundColour((255, 0, 0))
+        font = wx.Font(10, wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        errortext.SetFont(font)
+
+        close_btn = wx.Button(panel, label="Close")
+        close_btn.Bind(wx.EVT_BUTTON, self.click_close)
+
+        box.Add(errortext, wx.SizerFlags().Center().Border(wx.ALL))
+        box.Add(close_btn, wx.SizerFlags().Expand().Border(wx.ALL))
+
+        panel.SetSizer(box)
+        panel.Fit()
+        self.Centre()
+        self.Show(True)
+
+    def click_close(self, event):
+        self.Close()
 
 # Parse a tf_weapon config file into a tree-like OrderedDict representation recursively
 def parse_cfg(lines):
@@ -625,11 +658,15 @@ def parse_cfg(lines):
             data_map[data.group(1).strip("\"")] = data.group(2).strip("\"")
 
         # Found a nested map structure, recurse and increment "it" past the sub map
-        elif it < len(lines) - 2 and re.search(re_header, ln) and re.search(re_bracket_open, lines[it+1]):
-            submap = get_submap(it+2)
+        elif it < len(lines) - 2:
+            header_match = re.search(re_header, ln)
 
-            data_map[re.search(re_header, ln).group(1)] = parse_cfg(submap)
-            it += len(submap) + 1
+            if header_match and re.search(re_bracket_open, lines[it+1]):
+                header = "WeaponData" if "WeaponData" in header_match.group(1) else header_match.group(1)
+                submap = get_submap(it+2)
+
+                data_map[header] = parse_cfg(submap)
+                it += len(submap) + 1
 
         it += 1
 
@@ -675,6 +712,7 @@ def write_cfg(path, lines):
 # Build list of data structures containing key information about each weapon
 # Each entry includes the file path, the weapon class name, and the parsed file contents
 def get_weapons():
+    global debug_lastfile
     files = [f for f in os.listdir(options["scripts_path"]) if os.path.isfile(
         os.path.join(options["scripts_path"], f))]
     re_weapon = "^(tf_weapon_[a-zA-Z_]+)\.txt$"
@@ -687,6 +725,8 @@ def get_weapons():
             continue
 
         fpath = "{}/{}".format(options["scripts_path"], fn)
+        debug_lastfile = "/".join(fpath.replace("\\", "/").split("/")[-2:])
+
         with open(fpath, "r") as f:
             datum = {
                 "path": fpath,
@@ -811,10 +851,13 @@ def handle_frame_type():
 
 def make_frame(type):
     if type:
-        entries = build_entries()
-        CrosshairFrame(None, "VTF Crosshair Changer", constants["window_size"], entries)
+        try:
+            entries = build_entries()
+            CrosshairFrame(None, "VTF Crosshair Changer", constants["window_size"], entries)
+        except:
+            ErrorFrame(None, "Error", constants["error_window_size"], ui["parse_error_msg"].format(debug_lastfile if len(debug_lastfile) > 0 else "<None>"))
     else:
-        DirPickerFrame(None, "Error", constants["error_window_size"], ui["error_msg"])
+        DirPickerFrame(None, "Error", constants["folder_select_window_size"], ui["invalid_folder_msg"])
 
 
 if __name__ == "__main__":
