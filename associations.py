@@ -98,7 +98,7 @@ weapon_associations = {
 			"Prinny Machete"
 		]
 	},
-	"tf_weapon_fish": {
+	"tf_weapon_bat_fish": {
 		"class": "Scout",
 		"slot": 3,
 		"display": "Holy Mackerel",
@@ -136,6 +136,14 @@ weapon_associations = {
 			"The Liberty Launcher",
 			"The Original",
 			"The Beggar's Bazooka"
+		]
+	},
+	"tf_weapon_particle_cannon": {
+		"class": "Soldier",
+		"slot": 1,
+		"display": "Cow Mangler 5000",
+		"all": [
+			"Cow Mangler 5000"
 		]
 	},
 	"tf_weapon_rocketlauncher_directhit": {
@@ -218,7 +226,7 @@ weapon_associations = {
 			"Nostromo Napalmer"
 		]
 	},
-	"tf_weapon_flamethrower_fireball": {
+	"tf_weapon_rocketlauncher_fireball": {
 		"class": "Pyro",
 		"slot": 1,
 		"display": "Dragon's Fury",
@@ -246,6 +254,14 @@ weapon_associations = {
 			"The Flare Gun",
 			"The Detonator",
 			"The Scorch Shot"
+		]
+	},
+	"tf_weapon_flaregun_revenge": {
+		"class": "Pyro",
+		"slot": 2,
+		"display": "Manmelter",
+		"all": [
+			"Manmelter"
 		]
 	},
 	"tf_weapon_rocketpack": {
@@ -380,6 +396,14 @@ weapon_associations = {
 			"The Half-Zatoichi"
 		]
 	},
+	"tf_weapon_stickbomb": {
+		"class": "Demoman",
+		"slot": 3,
+		"display": "Ullapool Caber",
+		"all": [
+			"Ullapool Caber"
+		]
+	},
 
 	# HEAVY
 	"tf_weapon_minigun": {
@@ -500,6 +524,14 @@ weapon_associations = {
 		"all": [
 			"The Wrangler",
 			"The Giger Counter"
+		]
+	},
+	"tf_weapon_mechanical_arm": {
+		"class": "Engineer",
+		"slot": 2,
+		"display": "Short Circuit",
+		"all": [
+			"Short Circuit"
 		]
 	},
 	"tf_weapon_wrench": {
