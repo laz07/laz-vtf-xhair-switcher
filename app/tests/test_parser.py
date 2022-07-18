@@ -276,12 +276,6 @@ class TestParseCfg:
     output = parser.parse_cfg(cfg_full)
     assert output == parsed_cfg_full
 
-  # def test_parse_from_file(self):
-  #   with open('tf_weapon_bat.txt', 'r') as f:
-  #     output = parser.parse_cfg(f.readlines())
-  #     print(output)
-  #     print(parsed_cfg_full)
-  #     assert output == parsed_cfg_full
 
 class TestReconstructCfg:
   def test_reconstruct_one_header_one_attribute(self):

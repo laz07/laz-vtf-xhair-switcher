@@ -299,8 +299,6 @@ class CrosshairApp(QMainWindow):
         self.table.setItem(i, 1, QTableWidgetItem(get_xhair_from_cfg(cfg)))
         i += 1
 
-      print(self.parser.cfgs.keys())
-
       self.table.setSortingEnabled(True)
 
 
