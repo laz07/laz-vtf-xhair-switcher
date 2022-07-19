@@ -22,3 +22,4 @@ class TopBar(QHBoxLayout):
     self.addWidget(self.path, 0, Qt.AlignmentFlag.AlignLeft)
     self.addWidget(self.path_change, 0, Qt.AlignmentFlag.AlignLeft)
     self.addLayout(self.button_bar, Qt.AlignmentFlag.AlignRight)
+

@@ -12,7 +12,8 @@ from PyQt6.QtCore import *
 
 from constants.associations import weapon_associations, reverse_associations
 from constants.ui import *
-from constants.constants import DATA_DIR, XHAIR_PREVIEW_BG, ICON_APP, ICON_UNDO, ICON_REDO, ICON_INFO
+from constants.constants import DATA_DIR, ICON_APP, APPLY_SELECTION, APPLY_CLASS, APPLY_SLOT, APPLY_ALL, BULK_APPLY_OPTIONS
+
 from utils import change_xhair_in_cfg, prepare_entries, get_xhair_from_cfg, get_xhairs, write_cfg
 from parser import CfgParser
 
@@ -25,10 +26,11 @@ from app.top_bar import TopBar
 
 
 class CrosshairAppOptions:
-  cfg_path = ''
-  backup_scripts = True
-  weapon_display_type = True
-
+  def __init__(self):
+    self.cfg_path = ''
+    self.backup_scripts = True
+    self.weapon_display_type = False
+    self.custom_apply_groups = {}
 
 class CrosshairHistory:
   def __init__(self):
@@ -92,7 +94,7 @@ class CrosshairApp(QApplication):
 
     self.options = CrosshairAppOptions()
     self.retrieve_options()
-    self.associations = weapon_associations if self.options.weapon_display_type else reverse_associations
+    self.associations = reverse_associations if self.options.weapon_display_type else weapon_associations
 
     if (not self.options.cfg_path or len(self.options.cfg_path) == 0):
       self.handle_path_select()
@@ -126,6 +128,7 @@ class CrosshairApp(QApplication):
     self.table = Table()
 
     self.controls.generate_previews(self.xhairs)
+    self.controls.selector.bulk_combo.addItems(self.options.custom_apply_groups)
 
     self.layout.addLayout(self.top_bar, 0, 0, 1, 2)
     self.layout.addWidget(self.table, 1, 0)
@@ -181,7 +184,7 @@ class CrosshairApp(QApplication):
     self.parser.cfgs = {}
 
     for entry in self.entries:
-      label = entry["name"] if self.options.weapon_display_type else \
+      label = entry["name"] if not self.options.weapon_display_type else \
         "{}: {}".format(weapon_associations[entry["name"]]["class"], weapon_associations[entry["name"]]["display"])
 
       self.parser.cfgs[label] = self.parser.parse_cfg(entry["contents"])
@@ -194,7 +197,11 @@ class CrosshairApp(QApplication):
     if os.path.exists(data_path):
       with open(data_path, "rb") as f:
         try:
-          self.options = pickle.load(f)
+          loaded = pickle.load(f)
+
+          for k in loaded.__dict__.keys():
+            setattr(self.options, k, getattr(loaded, k))
+
         except:
           f.close()
 
@@ -202,6 +209,7 @@ class CrosshairApp(QApplication):
   def write_options(self):
     """ Pickle and store options to the user directory """
     data_path = os.path.join(DATA_DIR, 'data.txt')
+
 
     if os.path.exists(data_path):
       with open(data_path, "w") as f:
@@ -222,10 +230,22 @@ class CrosshairApp(QApplication):
     if not hasattr(self.options, option):
       return
 
-    setattr(self.options, option, new_val)
-
     if option == "weapon_display_type":
-      self.associations = weapon_associations if new_val else reverse_associations
+      self.associations = reverse_associations if new_val else weapon_associations
+      setattr(self.options, option, new_val)
+    elif option == "custom_apply_groups":
+      (name, weapons) = new_val
+
+      if not weapons:
+        self.options.custom_apply_groups.pop(name, None)
+      else:
+        self.options.custom_apply_groups[name] = weapons
+
+      self.controls.selector.bulk_combo.clear()
+      self.controls.selector.bulk_combo.addItems(BULK_APPLY_OPTIONS.keys())
+      self.controls.selector.bulk_combo.addItems(self.options.custom_apply_groups)
+    else:
+      setattr(self.options, option, new_val)
 
     self.parse_cfgs()
     self.table.populate(self.parser.cfgs)
@@ -244,31 +264,32 @@ class CrosshairApp(QApplication):
       changed += [(wep, get_xhair_from_cfg(self.parser.cfgs[wep]) if wep in self.parser.cfgs else None)]
       self.modify_weapon(wep, new_xhair)
 
-    for weapon in [x[0] for x in self.selected_items]:
-      if weapon not in self.parser.cfgs:
-        continue
 
-      if action_type == "apply":
-        modify(weapon)
-      else:
-        if weapon not in self.associations:
+    if action_type in self.options.custom_apply_groups:
+      for wep in self.options.custom_apply_groups[action_type]:
+        modify(wep)
+    else:
+      for weapon in [x[0] for x in self.selected_items]:
+        if weapon not in self.parser.cfgs or \
+          (action_type == APPLY_SELECTION and weapon not in self.associations):
           continue
 
-        if action_type == "class":
+        if action_type == APPLY_SELECTION:
+          modify(weapon)
+        elif action_type == APPLY_CLASS:
           cur_class = self.associations[weapon]["class"]
           filtered = list(filter(lambda x, check=cur_class : self.associations[x]["class"] == check, self.associations.keys()))
 
           for wep in filtered:
             modify(wep)
-
-        elif action_type == "slot":
+        elif action_type == APPLY_SLOT:
           cur_slot = self.associations[weapon]["slot"]
           filtered = list(filter(lambda x, check=cur_slot : self.associations[x]["slot"] == check, self.associations.keys()))
 
           for wep in filtered:
             modify(wep)
 
-        elif action_type == "all":
+        elif action_type == APPLY_ALL:
           for wep in self.associations.keys():
             modify(wep)
 
@@ -282,6 +303,7 @@ class CrosshairApp(QApplication):
     self.add_log(log)
     self.history.add_item([x[0] for x in changed], [x[1] for x in changed], [new_xhair] * len(changed), log)
     self.table.populate(self.parser.cfgs)
+    self.WeaponSelectSignal.emit([])
 
 
   def on_weapon_selected(self, selected_items):

@@ -10,7 +10,7 @@ class Options(QVBoxLayout):
     super().__init__()
 
     self.display_type_chkbox = QCheckBox('Display weapon names')
-    self.display_type_chkbox.setChecked(initial_options.weapon_display_type)
+    self.display_type_chkbox.setChecked(False)
     self.display_type_chkbox.clicked.connect(lambda val : get_app().OptionSignal.emit("weapon_display_type", val))
 
     self.backup_chkbox = QCheckBox('Backup scripts before modifying')

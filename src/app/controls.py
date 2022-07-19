@@ -37,7 +37,7 @@ class Controls(QGridLayout):
 
   def update_xhair_preview(self, xhairs):
     """ Change the crosshair preview image """
-    if len(xhairs) > 1:
+    if len(xhairs) == 0 or xhairs.count(xhairs[0]) != len(xhairs):
       self.crosshair_image.setPixmap(QPixmap())
       return
 

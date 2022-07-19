@@ -16,3 +16,17 @@ ICON_APP = "assets/app.png"
 ICON_UNDO = "assets/undo.png"
 ICON_REDO = "assets/redo.png"
 ICON_INFO = "assets/info.png"
+
+APPLY_SELECTION = 'apply'
+APPLY_CLASS = 'class'
+APPLY_SLOT = 'slot'
+APPLY_ALL = 'all'
+
+BULK_APPLY_OPTIONS = {
+  'select...': None,
+  'All weapons of this class': APPLY_CLASS,
+  'All weapons of this slot': APPLY_SLOT,
+  'All weapons': APPLY_ALL
+}
+
+ITALIC_TAG = "<span style=\"font-style: italic;\">{}</span>"
