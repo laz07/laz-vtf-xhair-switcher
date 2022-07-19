@@ -1,5 +1,5 @@
 from ast import parse
-from app.parser import CfgParser
+from src.parser import CfgParser
 from collections import OrderedDict
 
 cfg_one_header_one_attribute = [

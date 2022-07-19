@@ -1,6 +1,6 @@
 import re
 from collections import OrderedDict
-from app.constants.regex import RE_BRACKET_OPEN, RE_BRACKET_CLOSE, RE_DATA, RE_COMMENT, RE_HEADER
+from src.constants.regex import RE_BRACKET_OPEN, RE_BRACKET_CLOSE, RE_DATA, RE_COMMENT, RE_HEADER
 
 
 def get_header_sub_index(cfg, header_match, index):

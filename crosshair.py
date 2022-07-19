@@ -3,11 +3,10 @@ import os
 import sys
 import ctypes
 
-sys.path.append(os.path.abspath('/app'))
-sys.path.append(os.path.abspath('/app/ui'))
+sys.path.insert(0, os.path.abspath('./src'))
 
-from app.utils import initialize_local_storage
-from app.app import show_app
+from utils import initialize_local_storage
+from app.main import show_app
 
 # Get the icon to show on the windows taskbar
 myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string

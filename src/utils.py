@@ -1,8 +1,11 @@
 import os
 import re
-from app.constants.constants import FOLDER_PATH, DATA_DIR
-from app.constants.regex import RE_WEAPON
-from app.constants.associations import weapon_associations
+
+from PyQt6.QtWidgets import QApplication
+
+from constants.constants import FOLDER_PATH, DATA_DIR
+from constants.regex import RE_WEAPON
+from constants.associations import weapon_associations
 
 # generate a (probably) unique hash to append to the
 # backup folders' names to give each folder a unique name
@@ -91,3 +94,6 @@ def prepare_entries(path):
   entries = [x for x in cfgs if x["name"] in weapon_associations]
 
   return entries
+
+def get_app():
+  return QApplication.instance()

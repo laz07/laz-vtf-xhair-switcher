@@ -2,6 +2,7 @@
 weapon_associations = {
 	# SCOUT
 	"tf_weapon_scattergun": {
+		"code": "tf_weapon_scattergun",
 		"class": "Scout",
 		"slot": 1,
 		"display": "Scatterguns",
@@ -12,6 +13,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_handgun_scout_primary": {
+    "code": "tf_weapon_handgun_scout_primary",
 		"class": "Scout",
 		"slot": 1,
 		"display": "Shortstop",
@@ -20,6 +22,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_pep_brawler_blaster": {
+    "code": "tf_weapon_pep_brawler_blaster",
 		"class": "Scout",
 		"slot": 1,
 		"display": "Baby Face's Blaster",
@@ -28,6 +31,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_soda_popper": {
+    "code": "tf_weapon_soda_popper",
 		"class": "Scout",
 		"slot": 1,
 		"display": "Soda Popper",
@@ -36,6 +40,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_pistol_scout": {
+    "code": "tf_weapon_pistol_scout",
 		"class": "Scout",
 		"slot": 2,
 		"display": "Stock Pistols",
@@ -46,6 +51,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_lunchbox_drink": {
+    "code": "tf_weapon_lunchbox_drink",
 		"class": "Scout",
 		"slot": 2,
 		"display": "Bonk! Atomic Punch",
@@ -55,6 +61,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_jar_milk": {
+    "code": "tf_weapon_jar_milk",
 		"class": "Scout",
 		"slot": 2,
 		"display": "Mad Milk",
@@ -64,6 +71,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_handgun_scout_secondary": {
+    "code": "tf_weapon_handgun_scout_secondary",
 		"class": "Scout",
 		"slot": 2,
 		"display": "Winger/Pocket Pistol",
@@ -73,6 +81,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_bat": {
+    "code": "tf_weapon_bat",
 		"class": "Scout",
 		"slot": 3,
 		"display": "Most Melee",
@@ -99,6 +108,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_bat_fish": {
+    "code": "tf_weapon_bat_fish",
 		"class": "Scout",
 		"slot": 3,
 		"display": "Holy Mackerel",
@@ -108,6 +118,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_bat_giftwrap": {
+    "code": "tf_weapon_bat_giftwrap",
 		"class": "Scout",
 		"slot": 3,
 		"display": "Wrap Assassin",
@@ -116,6 +127,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_bat_wood": {
+    "code": "tf_weapon_bat_wood",
 		"class": "Scout",
 		"slot": 3,
 		"display": "Sandman",
@@ -126,6 +138,7 @@ weapon_associations = {
 
 	# SOLDIER
 	"tf_weapon_rocketlauncher": {
+    "code": "tf_weapon_rocketlauncher",
 		"class": "Soldier",
 		"slot": 1,
 		"display": "Rocket Launcher",
@@ -139,6 +152,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_particle_cannon": {
+    "code": "tf_weapon_particle_cannon",
 		"class": "Soldier",
 		"slot": 1,
 		"display": "Cow Mangler 5000",
@@ -147,6 +161,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_rocketlauncher_directhit": {
+    "code": "tf_weapon_rocketlauncher_directhit",
 		"class": "Soldier",
 		"slot": 1,
 		"display": "Direct Hit",
@@ -155,6 +170,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_rocketlauncher_airstrike": {
+    "code": "tf_weapon_rocketlauncher_airstrike",
 		"class": "Soldier",
 		"slot": 1,
 		"display": "Air Strike",
@@ -163,6 +179,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_shotgun_soldier": {
+    "code": "tf_weapon_shotgun_soldier",
 		"class": "Soldier",
 		"slot": 2,
 		"display": "Shotguns",
@@ -173,6 +190,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_buff_item": {
+    "code": "tf_weapon_buff_item",
 		"class": "Soldier",
 		"slot": 2,
 		"display": "Banners",
@@ -183,6 +201,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_raygun": {
+    "code": "tf_weapon_raygun",
 		"class": "Soldier",
 		"slot": 2,
 		"display": "Righteous Bison",
@@ -191,6 +210,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_shovel": {
+    "code": "tf_weapon_shovel",
 		"class": "Soldier",
 		"slot": 3,
 		"display": "Melee",
@@ -215,6 +235,7 @@ weapon_associations = {
 
 	# PYRO
 	"tf_weapon_flamethrower": {
+    "code": "tf_weapon_flamethrower",
 		"class": "Pyro",
 		"slot": 1,
 		"display": "Flamethrowers",
@@ -227,6 +248,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_rocketlauncher_fireball": {
+    "code": "tf_weapon_rocketlauncher_fireball",
 		"class": "Pyro",
 		"slot": 1,
 		"display": "Dragon's Fury",
@@ -235,6 +257,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_shotgun_pyro": {
+    "code": "tf_weapon_shotgun_pyro",
 		"class": "Pyro",
 		"slot": 2,
 		"display": "Shotguns",
@@ -247,6 +270,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_flaregun": {
+    "code": "tf_weapon_flaregun",
 		"class": "Pyro",
 		"slot": 2,
 		"display": "Flare Guns",
@@ -257,6 +281,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_flaregun_revenge": {
+    "code": "tf_weapon_flaregun_revenge",
 		"class": "Pyro",
 		"slot": 2,
 		"display": "Manmelter",
@@ -265,6 +290,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_rocketpack": {
+    "code": "tf_weapon_rocketpack",
 		"class": "Pyro",
 		"slot": 2,
 		"display": "Thermal Thruster",
@@ -273,6 +299,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_jar_gas": {
+    "code": "tf_weapon_jar_gas",
 		"class": "Pyro",
 		"slot": 2,
 		"display": "Gas Passer",
@@ -281,10 +308,11 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_fireaxe": {
+    "code": "tf_weapon_fireaxe",
 		"class": "Pyro",
 		"slot": 3,
 		"display": "Most Melee",
-		"all": [		
+		"all": [
 			"Fire Axe",
 			"The Axtinguisher",
 			"Homewrecker",
@@ -309,6 +337,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_breakable_sign": {
+    "code": "tf_weapon_breakable_sign",
 		"class": "Pyro",
 		"slot": 3,
 		"display": "Neon Annihilator",
@@ -317,6 +346,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_slap": {
+    "code": "tf_weapon_slap",
 		"class": "Pyro",
 		"slot": 3,
 		"display": "Hot Hand",
@@ -328,6 +358,7 @@ weapon_associations = {
 	# DEMO
 
 	"tf_weapon_grenadelauncher": {
+    "code": "tf_weapon_grenadelauncher",
 		"class": "Demoman",
 		"slot": 1,
 		"display": "Grenade Launchers",
@@ -338,6 +369,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_cannon": {
+    "code": "tf_weapon_cannon",
 		"class": "Demoman",
 		"slot": 1,
 		"display": "Loose Cannon",
@@ -346,6 +378,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_pipebomblauncher": {
+    "code": "tf_weapon_pipebomblauncher",
 		"class": "Demoman",
 		"slot": 2,
 		"display": "Sticky Launchers",
@@ -357,6 +390,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_bottle": {
+    "code": "tf_weapon_bottle",
 		"class": "Demoman",
 		"slot": 3,
 		"display": "Some Melee",
@@ -376,6 +410,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_sword": {
+    "code": "tf_weapon_sword",
 		"class": "Demoman",
 		"slot": 3,
 		"display": "Swords",
@@ -389,6 +424,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_katana": {
+    "code": "tf_weapon_katana",
 		"class": "Demoman",
 		"slot": 3,
 		"display": "The Half-Zatoichi",
@@ -397,6 +433,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_stickbomb": {
+    "code": "tf_weapon_stickbomb",
 		"class": "Demoman",
 		"slot": 3,
 		"display": "Ullapool Caber",
@@ -407,6 +444,7 @@ weapon_associations = {
 
 	# HEAVY
 	"tf_weapon_minigun": {
+    "code": "tf_weapon_minigun",
 		"class": "Heavy",
 		"slot": 1,
 		"display": "Miniguns",
@@ -421,6 +459,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_shotgun_hwg": {
+    "code": "tf_weapon_shotgun_hwg",
 		"class": "Heavy",
 		"slot": 2,
 		"display": "Shotguns",
@@ -431,6 +470,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_lunchbox": {
+    "code": "tf_weapon_lunchbox",
 		"class": "Heavy",
 		"slot": 2,
 		"display": "Sandvich/Other food",
@@ -444,6 +484,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_fists": {
+    "code": "tf_weapon_fists",
 		"class": "Heavy",
 		"slot": 3,
 		"display": "Melee",
@@ -474,6 +515,7 @@ weapon_associations = {
 
 	# ENGINEER
 	"tf_weapon_shotgun_primary": {
+    "code": "tf_weapon_shotgun_primary",
 		"class": "Engineer",
 		"slot": 1,
 		"display": "Shotguns",
@@ -484,6 +526,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_sentry_revenge": {
+    "code": "tf_weapon_sentry_revenge",
 		"class": "Engineer",
 		"slot": 1,
 		"display": "The Frontier Justice",
@@ -492,6 +535,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_drg_pomson": {
+    "code": "tf_weapon_drg_pomson",
 		"class": "Engineer",
 		"slot": 1,
 		"display": "Pomson 6000",
@@ -500,6 +544,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_shotgun_building_rescue": {
+    "code": "tf_weapon_shotgun_building_rescue",
 		"class": "Engineer",
 		"slot": 1,
 		"display": "Rescue Ranger",
@@ -508,6 +553,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_pistol": {
+    "code": "tf_weapon_pistol",
 		"class": "Engineer",
 		"slot": 2,
 		"display": "Pistols",
@@ -518,6 +564,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_laser_pointer": {
+    "code": "tf_weapon_laser_pointer",
 		"class": "Engineer",
 		"slot": 2,
 		"display": "Wranglers",
@@ -527,6 +574,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_mechanical_arm": {
+    "code": "tf_weapon_mechanical_arm",
 		"class": "Engineer",
 		"slot": 2,
 		"display": "Short Circuit",
@@ -535,6 +583,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_wrench": {
+    "code": "tf_weapon_wrench",
 		"class": "Engineer",
 		"slot": 3,
 		"display": "Most Melee",
@@ -552,6 +601,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_robot_arm": {
+    "code": "tf_weapon_robot_arm",
 		"class": "Engineer",
 		"slot": 3,
 		"display": "Gunslinger",
@@ -562,6 +612,7 @@ weapon_associations = {
 
 	# MEDIC
 	"tf_weapon_syringegun_medic": {
+    "code": "tf_weapon_syringegun_medic",
 		"class": "Medic",
 		"slot": 1,
 		"display": "Syringe Guns",
@@ -572,6 +623,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_crossbow": {
+    "code": "tf_weapon_crossbow",
 		"class": "Medic",
 		"slot": 1,
 		"display": "Crusader's Crossbow",
@@ -580,6 +632,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_medigun": {
+    "code": "tf_weapon_medigun",
 		"class": "Medic",
 		"slot": 2,
 		"display": "Mediguns",
@@ -591,6 +644,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_bonesaw": {
+    "code": "tf_weapon_bonesaw",
 		"class": "Medic",
 		"slot": 3,
 		"display": "Melee",
@@ -616,6 +670,7 @@ weapon_associations = {
 
 	# SNIPER
 	"tf_weapon_sniperrifle": {
+    "code": "tf_weapon_sniperrifle",
 		"class": "Sniper",
 		"slot": 1,
 		"display": "Rifles",
@@ -630,6 +685,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_compound_bow": {
+    "code": "tf_weapon_compound_bow",
 		"class": "Sniper",
 		"slot": 1,
 		"display": "Bows",
@@ -639,6 +695,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_sniperrifle_decap": {
+    "code": "tf_weapon_sniperrifle_decap",
 		"class": "Sniper",
 		"slot": 1,
 		"display": "The Bazaar Bargain",
@@ -647,6 +704,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_sniperrifle_classic": {
+    "code": "tf_weapon_sniperrifle_classic",
 		"class": "Sniper",
 		"slot": 1,
 		"display": "Classic",
@@ -655,6 +713,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_smg": {
+    "code": "tf_weapon_smg",
 		"class": "Sniper",
 		"slot": 2,
 		"display": "SMG",
@@ -663,6 +722,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_charged_smg": {
+    "code": "tf_weapon_charged_smg",
 		"class": "Sniper",
 		"slot": 2,
 		"display": "Cleaner's Carbine",
@@ -671,6 +731,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_jar": {
+    "code": "tf_weapon_jar",
 		"class": "Sniper",
 		"slot": 2,
 		"display": "Jarate",
@@ -680,6 +741,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_club": {
+    "code": "tf_weapon_club",
 		"class": "Sniper",
 		"slot": 3,
 		"display": "Melee",
@@ -702,6 +764,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_revolver": {
+    "code": "tf_weapon_revolver",
 		"class": "Spy",
 		"slot": 1,
 		"display": "Revolvers",
@@ -715,6 +778,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_builder": {
+    "code": "tf_weapon_builder",
 		"class": "Spy",
 		"slot": 2,
 		"display": "Stock Sapper",
@@ -723,6 +787,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_sapper": {
+    "code": "tf_weapon_sapper",
 		"class": "Spy",
 		"slot": 2,
 		"display": "Alternate Sappers",
@@ -733,6 +798,7 @@ weapon_associations = {
 		]
 	},
 	"tf_weapon_knife": {
+    "code": "tf_weapon_knife",
 		"class": "Spy",
 		"slot": 3,
 		"display": "Melee",
