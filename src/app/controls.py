@@ -10,10 +10,32 @@ from PyQt6.QtCore import *
 from utils import get_app
 from app.selector import Selector
 from app.options import Options
-from constants.constants import XHAIR_PREVIEW_BG, DATA_DIR
+from constants.constants import XHAIR_PREVIEW_BG, DATA_DIR, BLUE_TAG
 from constants.associations import weapon_associations, reverse_associations
 
 class Controls(QGridLayout):
+  def __init__(self, initial_options, xhairs):
+    super().__init__()
+
+    self.info = QTextEdit('')
+    self.info.setMinimumWidth(200)
+    self.info.setReadOnly(True)
+
+    self.crosshair_image = QLabel()
+    self.crosshair_image.setMinimumSize(200, 200)
+
+    self.crosshair_image.setStyleSheet("QLabel { background-color: " + XHAIR_PREVIEW_BG + "; }")
+
+    self.selector = Selector(xhairs)
+    self.options = Options(initial_options)
+
+    self.addWidget(self.info, 0, 0)
+    self.addWidget(self.crosshair_image, 0, 1)
+    self.addLayout(self.selector, 1, 0)
+    self.addLayout(self.options, 1, 1)
+
+    self.setRowStretch(0, 1)
+
   def generate_previews(self, xhairs):
     """ Convert VTFs to PNGs and display loading dialog """
     progress = QProgressDialog("Generating Preview Images...", "Cancel", 0, 100, get_app().window)
@@ -52,7 +74,12 @@ class Controls(QGridLayout):
       self.crosshair_image.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter);
 
   def update_info(self, weapons):
-    """ Change the info textbox to reflect passed in weapons list data """
+    """ Change the info textbox to reflect passed in weapons list data """\
+
+    if len(weapons) == 0:
+      self.info.setHtml('')
+      return
+
     display_class = ''
     display_name = ''
     display_slot = ''
@@ -75,39 +102,15 @@ class Controls(QGridLayout):
 
       display_all += assoc["all"]
 
+    templ = BLUE_TAG + ": {}<br />"
     html = ""
-    templ = "<span style=\"color: #0088dd\">{}</span>: {}<br/>"
-
     html += templ.format("Class", display_class)
     html += templ.format("Name", display_name)
     html += templ.format("Slot", display_slot)
-    html += "<span style=\"color: #0088dd\">Associated Weapons:</span><br/>"
+    html += BLUE_TAG.format('Associated Weapons:') + "<br />"
 
     for wep in display_all:
       html += "{}<br/>".format(wep)
 
     self.info.setHtml(html)
-
-
-  def __init__(self, initial_options, xhairs):
-    super().__init__()
-
-    self.info = QTextEdit('')
-    self.info.setMinimumWidth(200)
-    self.info.setReadOnly(True)
-
-    self.crosshair_image = QLabel()
-    self.crosshair_image.setMinimumSize(200, 200)
-
-    self.crosshair_image.setStyleSheet("QLabel { background-color: " + XHAIR_PREVIEW_BG + "; }")
-
-    self.selector = Selector(xhairs)
-    self.options = Options(initial_options)
-
-    self.addWidget(self.info, 0, 0)
-    self.addWidget(self.crosshair_image, 0, 1)
-    self.addLayout(self.selector, 1, 0)
-    self.addLayout(self.options, 1, 1)
-
-    self.setRowStretch(0, 1)
 

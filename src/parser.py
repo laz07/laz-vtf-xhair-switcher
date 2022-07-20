@@ -1,7 +1,8 @@
 import re
 from collections import OrderedDict
-from src.constants.regex import RE_BRACKET_OPEN, RE_BRACKET_CLOSE, RE_DATA, RE_COMMENT, RE_HEADER
-
+from sysconfig import parse_config_h
+from constants.regex import RE_BRACKET_OPEN, RE_BRACKET_CLOSE, RE_DATA, RE_COMMENT, RE_HEADER
+from constants.constants import REQUIRED_CFG
 
 def get_header_sub_index(cfg, header_match, index):
   if (index >= len(cfg) - 2 or not header_match):
@@ -44,6 +45,7 @@ def get_submap(cfg, start_index):
 class CfgParser:
   def __init__(self):
     self.cfgs = OrderedDict()
+    self.invalid_scripts = []
 
   def parse_cfg(self, cfg):
     data_map = OrderedDict()
@@ -106,3 +108,16 @@ class CfgParser:
 
     return lines
 
+  def validate_cfg(self, parsed_cfg):
+    for check in REQUIRED_CFG:
+
+      fields = check.split(".")
+      dive = parsed_cfg
+
+      for field in fields:
+        if field not in dive:
+          return False
+
+        dive = dive[field]
+
+    return True

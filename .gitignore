@@ -3,10 +3,9 @@ build/**
 crosshair.app
 crosshair.spec
 .vscode
-<<<<<<< HEAD
-__pycache__
-=======
 __pycache__
 materials/**
 scripts/**
->>>>>>> e7758c1... fix typos
+builddist
+.pytest_cache
+

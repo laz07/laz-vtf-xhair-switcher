@@ -30,3 +30,23 @@ BULK_APPLY_OPTIONS = {
 }
 
 ITALIC_TAG = "<span style=\"font-style: italic;\">{}</span>"
+BOLD_TAG = "<span style=\"font-weight: bold;\">{}</span>"
+BLUE_TAG = "<span style=\"color: #0088dd\">{}</span>"
+
+REQUIRED_CFG = {
+  'WeaponData',
+  'WeaponData.printname',
+  'WeaponData.BuiltRightHanded',
+  'WeaponData.weight',
+  'WeaponData.WeaponType',
+  'WeaponData.bucket',
+  'WeaponData.bucket_position',
+  'WeaponData.SoundData',
+  'WeaponData.TextureData',
+  'WeaponData.TextureData."crosshair"',
+  'WeaponData.TextureData."crosshair".file',
+  'WeaponData.TextureData."crosshair".x',
+  'WeaponData.TextureData."crosshair".y',
+  'WeaponData.TextureData."crosshair".width',
+  'WeaponData.TextureData."crosshair".height'
+}

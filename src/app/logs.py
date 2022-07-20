@@ -29,5 +29,5 @@ class Logs(QTextEdit):
 
     self.logs.append([time, log])
     self.moveCursor(QTextCursor.MoveOperation.End);
-    self.insertHtml("<b>[{}:{}:{}]</b> {}<br/>".format(
+    self.insertHtml("<b>({}:{}:{})</b> {}<br/>".format(
         pad(time[0]), pad(time[1]), pad(time[2]), log));

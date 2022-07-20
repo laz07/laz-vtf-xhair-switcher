@@ -1,9 +1,8 @@
-from gc import isenabled
 import sys
 import os
 import pickle
-import datetime
-from urllib.request import AbstractDigestAuthHandler
+import re
+import shutil
 from xml.dom.pulldom import SAX2DOM
 
 from PyQt6.QtWidgets import *
@@ -11,16 +10,21 @@ from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
 from constants.associations import weapon_associations, reverse_associations
+from constants.regex import RE_WEAPON
 from constants.ui import *
-from constants.constants import DATA_DIR, ICON_APP, APPLY_SELECTION, APPLY_CLASS, APPLY_SLOT, APPLY_ALL, BULK_APPLY_OPTIONS
+from constants.constants import DATA_DIR, ICON_APP, APPLY_SELECTION,\
+  APPLY_CLASS, APPLY_SLOT, APPLY_ALL, BULK_APPLY_OPTIONS, ITALIC_TAG, BOLD_TAG
 
-from utils import change_xhair_in_cfg, prepare_entries, get_xhair_from_cfg, get_xhairs, write_cfg
+from utils import change_xhair_in_cfg, prepare_entries, gen_hash, \
+  get_xhair_from_cfg, get_xhairs, write_cfg, format_path_by_os
 from parser import CfgParser
 
 from app.controls import Controls
 from app.logs import Logs
 from app.table import Table
 from app.top_bar import TopBar
+from app.repair_dialog import RepairDialog
+
 
 
 
@@ -28,9 +32,10 @@ from app.top_bar import TopBar
 class CrosshairAppOptions:
   def __init__(self):
     self.cfg_path = ''
-    self.backup_scripts = True
+    self.backup_scripts = False
     self.weapon_display_type = False
     self.custom_apply_groups = {}
+    self.history = CrosshairHistory()
 
 class CrosshairHistory:
   def __init__(self):
@@ -74,6 +79,7 @@ class CrosshairApp(QApplication):
   UndoRedoSignal = pyqtSignal(bool)
   LogSignal = pyqtSignal(str)
   PathChangeSignal = pyqtSignal()
+  RepairScriptsSignal = pyqtSignal()
 
   def __init__(self):
     super().__init__([])
@@ -90,7 +96,8 @@ class CrosshairApp(QApplication):
     self.xhairs = []
     self.selected_items = []
     self.logs = []
-    self.history = CrosshairHistory()
+
+    self.backup_hash = gen_hash()
 
     self.options = CrosshairAppOptions()
     self.retrieve_options()
@@ -107,6 +114,16 @@ class CrosshairApp(QApplication):
     self.parse_cfgs()
     self.table.populate(self.parser.cfgs)
 
+    is_valid = True
+
+    for cfg in self.parser.cfgs.keys():
+      cfg_valid = self.parser.validate_cfg(self.parser.cfgs[cfg])
+      if not cfg_valid:
+        print(cfg, cfg_valid)
+      is_valid = is_valid and cfg_valid
+
+    print(is_valid)
+
     self.OptionSignal.connect(self.on_option_changed)
     self.ApplySignal.connect(self.on_apply)
     self.WeaponSelectSignal.connect(self.on_weapon_selected)
@@ -114,9 +131,11 @@ class CrosshairApp(QApplication):
     self.UndoRedoSignal.connect(self.on_undo_redo)
     self.LogSignal.connect(self.add_log)
     self.PathChangeSignal.connect(self.on_path_change)
+    self.RepairScriptsSignal.connect(self.repair_scripts)
 
     self.exec()
     self.write_options()
+
 
   def build_gui(self):
     """ Create layout and instantiate all  portions of the UI """
@@ -138,6 +157,7 @@ class CrosshairApp(QApplication):
     self.wid.setLayout(self.layout)
     self.window.show()
 
+
   def modify_weapon(self, weapon, xhair):
     """ Change the crosshair associated with a weapon in the relevant parsed config, then write to file """
     cfg = self.parser.cfgs[weapon]
@@ -145,8 +165,6 @@ class CrosshairApp(QApplication):
     lines = self.parser.reconstruct_cfg(cfg)
     write_cfg(lines, self.options.cfg_path, weapon)
     self.parser.cfgs[weapon] = cfg
-
-
 
   def handle_path_select(self):
     """ Show config path selection dialog and update options with selected path """
@@ -182,12 +200,18 @@ class CrosshairApp(QApplication):
 
     self.entries = prepare_entries("{}/scripts".format(cfg_path))
     self.parser.cfgs = {}
+    self.parser.invalid_scripts = []
 
     for entry in self.entries:
       label = entry["name"] if not self.options.weapon_display_type else \
         "{}: {}".format(weapon_associations[entry["name"]]["class"], weapon_associations[entry["name"]]["display"])
 
-      self.parser.cfgs[label] = self.parser.parse_cfg(entry["contents"])
+      parsed = self.parser.parse_cfg(entry["contents"])
+
+      if self.parser.validate_cfg(parsed):
+        self.parser.cfgs[label] = parsed
+      else:
+        self.parser.invalid_scripts.append(label)
 
 
   def retrieve_options(self):
@@ -218,8 +242,50 @@ class CrosshairApp(QApplication):
     with open(data_path, "wb") as f:
       pickle.dump(self.options, f)
 
+
   def add_log(self, log):
     self.logs.add_log(log)
+
+
+  def backup_scripts(self):
+    scripts_path = os.path.join(self.options.cfg_path, "scripts")
+    backup_path = os.path.join(scripts_path, "backup_{}".format(self.backup_hash))
+
+    if os.path.isdir(backup_path):
+      return
+
+    os.mkdir(backup_path)
+
+    files = [f for f in os.listdir(scripts_path) if os.path.isfile(os.path.join(scripts_path, f))]
+
+    for file in files:
+      if not re.search(RE_WEAPON, file):
+          continue
+
+      shutil.copyfile("{}/{}".format(scripts_path, file), "{}/{}".format(backup_path, file))
+      self.add_log("Backed up {} to folder {}".format(ITALIC_TAG, ITALIC_TAG).format(file, format_path_by_os(backup_path)))
+
+  def repair_scripts(self):
+    weapons = RepairDialog.getWeaponsToRepair(self.wid, self.parser.invalid_scripts)
+
+    if len(weapons) == 0:
+      return
+
+    sample_dir = "assets/sample-scripts"
+    scripts_dir = os.path.join(self.options.cfg_path, "scripts")
+
+    for weapon in weapons:
+      sample_path = os.path.join(sample_dir, "{}.txt".format(weapon))
+      scripts_path = os.path.join(scripts_dir, "{}.txt".format(weapon))
+
+      if not os.path.exists(sample_path):
+        continue
+
+      shutil.copyfile(sample_path, scripts_path)
+
+    self.add_log("Repaired scripts for {}".format(ITALIC_TAG).format(", ".join(weapons)))
+    self.parse_cfgs()
+    self.table.populate(self.parser.cfgs)
 
 
   # --------- CALLBACKS ----------
@@ -296,12 +362,15 @@ class CrosshairApp(QApplication):
     log = ""
 
     if len(changed) == len(self.parser.cfgs):
-      log = "Changed all weapons to {}".format(new_xhair)
+      log = "Changed all weapons to {}".format(BOLD_TAG).format(new_xhair)
     else:
-      log = "Changed <span style=\"font-style: italic;\">{}</span> to {}".format(", ".join([x[0] for x in changed]), new_xhair)
+      log = "Changed {} to {}".format(ITALIC_TAG, BOLD_TAG).format(", ".join([x[0] for x in changed]), new_xhair)
 
     self.add_log(log)
-    self.history.add_item([x[0] for x in changed], [x[1] for x in changed], [new_xhair] * len(changed), log)
+    if self.options.backup_scripts:
+      self.backup_scripts()
+
+    self.options.history.add_item([x[0] for x in changed], [x[1] for x in changed], [new_xhair] * len(changed), log)
     self.table.populate(self.parser.cfgs)
     self.WeaponSelectSignal.emit([])
 
@@ -321,7 +390,7 @@ class CrosshairApp(QApplication):
 
   def on_undo_redo(self, undo = True):
     """ User has clicked undo or redo """
-    item = self.history.undo() if undo else self.history.redo()
+    item = self.options.history.undo() if undo else self.options.history.redo()
 
     if not item:
       return
@@ -349,7 +418,7 @@ class CrosshairApp(QApplication):
     self.parse_cfgs()
     self.table.populate(self.parser.cfgs)
     self.top_bar.path.setText(self.options.cfg_path)
-    self.add_log('Changed path to {}'.format(self.options.cfg_path))
+    self.add_log('Changed path to {}'.format(ITALIC_TAG).format(self.options.cfg_path))
 
 
 

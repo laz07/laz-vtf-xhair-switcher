@@ -95,5 +95,11 @@ def prepare_entries(path):
 
   return entries
 
+def format_path_by_os(path):
+    is_windows = os.name == 'nt'
+    delim = "\\" if is_windows else "/"
+
+    return path.replace("\\", delim).replace("/", delim)
+
 def get_app():
   return QApplication.instance()

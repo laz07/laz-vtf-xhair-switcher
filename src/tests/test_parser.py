@@ -91,9 +91,37 @@ cfg_weird_formatting_reconstructed = [
   '}\n'
 ]
 
+cfg_invalid_1 = ['', '\n']
+cfg_invalid_2 = ['abc', 'def', 'ghi']
+cfg_invalid_3 = [
+  'Header {} {}{}{}}{',
+  'Header {',
+  '`attribute`: `value`',
+  'data: {{',
+  'data: [',
+  '}}]'
+]
+cfg_invalid_4 = [
+  'Header2: {',
+  'Header3: {',
+  'Header4: {',
+  'Header5: {',
+  'Header6: {',
+  'Header7: {',
+  'Header8: {',
+  'invalid: attribute',
+  '}',
+  '}',
+  '}',
+  '}',
+  '}',
+  '}',
+  '}'
+]
 
-cfg_full = '''
-  WeaponData {
+
+cfg_full = '''WeaponData
+    {
     // Attributes Base.
     "printname"	"#TF_Weapon_Bat"
     "BuiltRightHanded"	"0"
@@ -129,36 +157,42 @@ cfg_full = '''
     }
 
     // Weapon Sprite data is loaded by the Client DLL.
-    TextureData {
-      "weapon" {
+    TextureData
+    {
+      "weapon"
+      {
         "file"	"sprites/bucket_bat_red"
         "x"	"0"
         "y"	"0"
         "width"	"200"
         "height"	"128"
       }
-      "weapon_s" {
+      "weapon_s"
+      {
         "file"	"sprites/bucket_bat_blue"
         "x"	"0"
         "y"	"0"
         "width"	"200"
         "height"	"128"
       }
-      "ammo" {
+      "ammo"
+      {
         "file"	"sprites/a_icons1"
         "x"	"55"
         "y"	"60"
         "width"	"73"
         "height"	"15"
       }
-      "crosshair" {
+      "crosshair"
+      {
         "file"	"vgui/replay/thumbnails/crosshair1OL"
         "x"	"0"
         "y"	"0"
         "width"	"64"
         "height"	"64"
       }
-      "autoaim" {
+      "autoaim"
+      {
         "file"	"sprites/crosshairs"
         "x"	"0"
         "y"	"48"
@@ -168,6 +202,7 @@ cfg_full = '''
     }
   }
 '''.split('\n')
+cfg_full = [line.strip() for line in cfg_full if line]
 
 parsed_cfg_full = OrderedDict([
   ("WeaponData", OrderedDict([
@@ -272,6 +307,13 @@ class TestParseCfg:
     output = parser.parse_cfg(cfg_weird_formatting)
     assert output == parsed_cfg_weird_formatting
 
+  def test_parse_invalid_cfgs(self):
+    '''Make sure that parsing invalid configs does not throw an error'''
+    parser.parse_cfg(cfg_invalid_1)
+    parser.parse_cfg(cfg_invalid_2)
+    parser.parse_cfg(cfg_invalid_3)
+    parser.parse_cfg(cfg_invalid_4)
+
   def test_parse_full_cfg(self):
     output = parser.parse_cfg(cfg_full)
     assert output == parsed_cfg_full
@@ -292,4 +334,5 @@ class TestReconstructCfg:
 
   def test_reconstruct_full_cfg(self):
     output = parser.reconstruct_cfg(parsed_cfg_full)
-    assert output == cfg_full
+
+    assert [x.strip() for x in output] == cfg_full

@@ -5,20 +5,6 @@ from PyQt6.QtCore import *
 from utils import get_app, get_xhair_from_cfg
 
 class Table(QTableWidget):
-  def populate(self, cfgs):
-    """ Populate contents of the main table using the parsed configs """
-    if len(cfgs) > 0:
-      self.setRowCount(len(cfgs))
-      self.setSortingEnabled(False)
-
-      i = 0
-      for label, cfg in cfgs.items():
-        self.setItem(i, 0, QTableWidgetItem(label))
-        self.setItem(i, 1, QTableWidgetItem(get_xhair_from_cfg(cfg)))
-        i += 1
-
-      self.setSortingEnabled(True)
-
   def __init__(self):
     super().__init__(0, 2)
 
@@ -35,3 +21,17 @@ class Table(QTableWidget):
     self.itemSelectionChanged.connect(
       lambda: get_app().WeaponSelectSignal.emit([x.text() for x in self.selectedItems()])
     )
+
+  def populate(self, cfgs):
+    """ Populate contents of the main table using the parsed configs """
+    if len(cfgs) > 0:
+      self.setRowCount(len(cfgs))
+      self.setSortingEnabled(False)
+
+      i = 0
+      for label, cfg in cfgs.items():
+        self.setItem(i, 0, QTableWidgetItem(label))
+        self.setItem(i, 1, QTableWidgetItem(get_xhair_from_cfg(cfg)))
+        i += 1
+
+      self.setSortingEnabled(True)
