@@ -53,7 +53,7 @@ cn = {
         "xhair_image_frame_title": "Add Crosshair PNGs",
         "xhair_image_content_msg": "PNG will be copied to your user directory with the name of the crosshair",
         "xhair_image_no_content_msg": "You have not added any additional crosshairs in this folder. Once you add some, you'll be able to assign PNGs to them here.",
-        "about_msg": "Made by Max \"laz\" M",
+        "about_msg": "Made by Max M/laz",
 
         "menubar_file_open_text": "Open Folder",
         "menubar_file_open_description": "Open Crosshair Folder",

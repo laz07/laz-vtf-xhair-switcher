@@ -4,6 +4,7 @@ import wx.lib.mixins.listctrl
 import os
 import shutil
 import datetime
+import re
 
 from app.utils import (
     get_crosshairs, 
@@ -99,14 +100,13 @@ class CrosshairFrame(wx.Frame):
 
         def generate_config(path):
             shutil.copytree(resource_path("assets/sample-xhair-config/materials"), "{}/materials".format(path))
-            shutil.copytree(resource_path("assets/sample-xhair-config/materials"), "{}/scripts".format(path))
+            shutil.copytree(resource_path("assets/sample-xhair-config/scripts"), "{}/scripts".format(path))
 
-            options.set("folder_path", path)
+            cn["options"]["folder_path"] = path
             persist_options()
 
             self.Destroy()
             newframe = make_frame()
-
 
             newframe.logs_add("Generated sample config at {}".format(path))
 
@@ -340,7 +340,7 @@ class CrosshairFrame(wx.Frame):
                 continue
 
             shutil.copyfile("{}/{}".format(scripts_path, file), "{}/{}".format(backup_path, file))
-            self.logs_add("Backed up {} to folder {}".format(file, cn["constants"]["backup_folder_path"].format(scripts_path)))
+            self.logs_add("Backed up {} to folder {}".format(file, format_path_by_os(cn["constants"]["backup_folder_path"].format(scripts_path))))
 
     # on-click for the 4 apply buttons
     def btn_apply_clicked(self, event):
