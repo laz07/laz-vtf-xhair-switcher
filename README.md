@@ -1,4 +1,5 @@
-# laz-vtf-crosshair-selector
+# laz-vtf-crosshair-switcher
+![crosshair_ICXozgybYe](https://user-images.githubusercontent.com/109486500/180332700-27332f20-12e4-49a9-8c26-b7cb4a4a237a.png)
 
 # Version
 3.0
