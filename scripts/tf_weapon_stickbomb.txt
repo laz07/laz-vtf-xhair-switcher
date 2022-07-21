@@ -1,4 +1,4 @@
-	WeaponData
+WeaponData
 {
 	// Attributes Base.
 	"printname"			"#TF_Weapon_StickBomb"
