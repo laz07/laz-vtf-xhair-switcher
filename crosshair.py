@@ -10,6 +10,7 @@ import json
 from associations import *
 from collections import OrderedDict
 
+
 def gen_hash():
     import hashlib
     import time
@@ -21,22 +22,25 @@ def gen_hash():
 
 
 constants = {
+    "defaults": {
+        "materials_path": "materials",
+        "scripts_path": "scripts",
+        "backup_scripts": False,
+        "weapon_display_type": False
+    },
     "default_materials_path": "materials",
     "default_scripts_path": "scripts",
     "backup_folder_path": "scripts/backup_{}".format(gen_hash()),
-    "min_window_size": (600, 400),
+    "window_size": (950, 600),
+    "error_window_size": (600, 250),
+    "min_window_size": (700, 500),
     "font_size": 8,
     "data_dir": os.path.expanduser('~/.crosshair-data.txt'),
     "logs_path": "xhs_logs.txt",
-    "xhair_preview_path": "{}/preview/" # Format with materials directory 
+    "xhair_preview_path": "{}/preview/"  # Format with materials directory
 }
 
-options = {
-    "materials_path": constants["default_materials_path"],
-    "scripts_path": constants["default_scripts_path"],
-    "backup_scripts": False,
-    "weapon_display_type": False
-}
+options = constants["defaults"].copy()
 
 ui = {
     "btn_apply": "Apply",
@@ -57,14 +61,13 @@ class FixedWidthListCtrl(wx.ListCtrl, wx.lib.mixins.listctrl.ListCtrlAutoWidthMi
         wx.lib.mixins.listctrl.ListCtrlAutoWidthMixin.__init__(self)
         self.setResizeColumn(0)
 
+
 # Main GUI frame
 class CrosshairFrame(wx.Frame):
     def __init__(self, parent, title, size, entries):
         super(CrosshairFrame, self).__init__(
             parent, title=title, size=size, style=wx.DEFAULT_FRAME_STYLE)
-        # Setup
-        # self.SetIcon(wx.Icon("xhair.ico"))
-
+        
         self.entries = entries
         self.cur_entries = []
         self.cur_xhair = ""
@@ -100,13 +103,13 @@ class CrosshairFrame(wx.Frame):
 
         # Top-left weapon list panel
         self.weapon_list = FixedWidthListCtrl(self.main_panel, -1, size=(
-            300, -1), style=wx.LC_REPORT)
+            500, -1), style=wx.LC_REPORT)
 
         self.weapon_list.SetFont(
             wx.Font(constants["font_size"], wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
         self.weapon_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_list_select)
         self.weapon_list.Bind(wx.EVT_LIST_COL_CLICK, self.col_click)
-        self.weapon_list_sort = [1,0]
+        self.weapon_list_sort = [1, 0]
         self.populate_list()
 
         # Top-right weapon info text panel
@@ -147,7 +150,8 @@ class CrosshairFrame(wx.Frame):
         box_weapon_info.Add(
             box_controls, wx.SizerFlags().Expand().Proportion(50))
 
-        box_weapon.Add(self.weapon_list, wx.SizerFlags().Expand().Proportion(50).Border(wx.ALL, 10))
+        box_weapon.Add(self.weapon_list, wx.SizerFlags(
+        ).Expand().Proportion(50).Border(wx.ALL, 10))
         box_weapon.Add(box_weapon_info,
                        wx.SizerFlags().Expand().Proportion(50).Border(wx.ALL, 10))
 
@@ -182,8 +186,10 @@ class CrosshairFrame(wx.Frame):
         box_opts.Add(self.checkbox_backup)
         box_opts.Add(self.btn_change_folders)
 
-        box_bottom.Add(self.logger, wx.SizerFlags().Expand().Proportion(70).Border(wx.ALL, 10))
-        box_bottom.Add(box_opts, wx.SizerFlags().Expand().Proportion(30).Border(wx.ALL, 10))
+        box_bottom.Add(self.logger, wx.SizerFlags(
+        ).Expand().Proportion(70).Border(wx.ALL, 10))
+        box_bottom.Add(box_opts, wx.SizerFlags(
+        ).Expand().Proportion(30).Border(wx.ALL, 10))
 
         box_main.Add(box_weapon, wx.SizerFlags().Expand().Proportion(70))
         box_main.Add(box_bottom, wx.SizerFlags(
@@ -248,8 +254,9 @@ class CrosshairFrame(wx.Frame):
         if len(self.cur_entries) > 1:
             return
 
-        preview_dir = constants["xhair_preview_path"].format("{}/vgui/replay/thumbnails/".format(options["materials_path"]))
-        
+        preview_dir = constants["xhair_preview_path"].format(
+            "{}/vgui/replay/thumbnails/".format(options["materials_path"]))
+
         if not os.path.isdir(preview_dir) or len(os.listdir(preview_dir) == 0):
             return
 
@@ -260,14 +267,15 @@ class CrosshairFrame(wx.Frame):
                 # SET IMAGE IN self.xhair_preview
                 pass
 
-
     # Populate list box with weapon
+
     def populate_list(self):
         sort_entries(self.entries, self.weapon_list_sort)
 
         self.weapon_list.ClearAll()
-        self.weapon_list.InsertColumn(0, "Weapon", width=150)
-        self.weapon_list.InsertColumn(1, "Crosshair", wx.LIST_FORMAT_RIGHT, width=150)
+        self.weapon_list.InsertColumn(0, "Weapon", width=200)
+        self.weapon_list.InsertColumn(
+            1, "Crosshair", wx.LIST_FORMAT_RIGHT, width=200)
 
         # Get the longest label so that the (crosshair) display can be positioned correctly
         def label_len(x): return len(x["name"] if options["weapon_display_type"]
@@ -276,8 +284,9 @@ class CrosshairFrame(wx.Frame):
             x if label_len(x) > label_len(y) else y), self.entries))
 
         for x in self.entries:
-            label = x["name"] if options["weapon_display_type"] else "{}: {}".format(weapon_associations[x["name"]]["class"], weapon_associations[x["name"]]["display"])
-            
+            label = x["name"] if options["weapon_display_type"] else "{}: {}".format(
+                weapon_associations[x["name"]]["class"], weapon_associations[x["name"]]["display"])
+
             self.weapon_list.Append([label, x["xhair"]])
 
         self.weapon_list.EnsureVisible(0)
@@ -369,7 +378,11 @@ class CrosshairFrame(wx.Frame):
         elif label == ui["chk_backup_scripts"]:
             options["backup_scripts"] = checked
 
+        persist_options()
+
     def on_list_select(self, event):
+        self.weapon_list.setResizeColumn(0)
+
         display = {"classes": [], "weapons": [],
                    "categories": [], "affected": []}
 
@@ -380,7 +393,7 @@ class CrosshairFrame(wx.Frame):
                 nxt = self.weapon_list.GetNextSelected(it)
                 if nxt == -1:
                     return s
-                
+
                 s.append(nxt)
                 it = nxt
 
@@ -461,17 +474,16 @@ class CrosshairFrame(wx.Frame):
 
     def col_click(self, event):
         col = event.GetColumn()
-        cur = self.weapon_list_sort[col] 
+        cur = self.weapon_list_sort[col]
         self.weapon_list_sort[col] = 1 if cur == 0 else cur * -1
         self.weapon_list_sort[1 if col == 0 else 0] = 0
-        
+
         self.populate_list()
 
     def btn_change_folders_clicked(self, event):
         self.Close()
-        clear_persisted_data()
+        clear_persisted_options()
         handle_frame_type()
-        # handle_frame_type()
 
 
 # wxPython popup frame to show when one of the two necessary folders is not present
@@ -509,17 +521,18 @@ class DirPickerFrame(wx.Frame):
         close_btn.Bind(wx.EVT_BUTTON, self.click_close)
 
         box_btns = wx.BoxSizer(wx.HORIZONTAL)
-        box_btns.Add(close_btn, wx.EXPAND)
-        box_btns.Add(self.continue_btn, wx.EXPAND)
+        box_btns.Add(close_btn, wx.SizerFlags().Expand().Right())
+        box_btns.Add(self.continue_btn, wx.SizerFlags().Right())
 
-        box.Add(errortext, wx.EXPAND, wx.EXPAND)
+        box.Add(errortext, wx.SizerFlags().Center().Border(wx.ALL))
         box.Add(wx.StaticText(
-            panel, label="Materials Directory (materials/):"))
-        box.Add(materials_picker, wx.EXPAND, wx.EXPAND)
-        box.Add(wx.StaticText(panel, label="Scripts Directory (scripts/):"))
-        box.Add(scripts_picker, wx.EXPAND, wx.EXPAND)
+            panel, label="Materials Directory (materials/):"), wx.SizerFlags().Border(wx.LEFT, 10))
+        box.Add(materials_picker, wx.SizerFlags().Expand().Border(wx.ALL))
+        box.Add(wx.StaticText(panel, label="Scripts Directory (scripts/):"),
+                wx.SizerFlags().Border(wx.LEFT, 10))
+        box.Add(scripts_picker, wx.SizerFlags().Expand().Border(wx.ALL))
 
-        box.Add(box_btns, 0, wx.EXPAND)
+        box.Add(box_btns, wx.SizerFlags().Expand().Border(wx.ALL))
 
         panel.SetSizer(box)
         panel.Fit()
@@ -532,7 +545,10 @@ class DirPickerFrame(wx.Frame):
     def click_continue(self, event):
         self.Close()
 
-        persist_data(self.paths)
+        options["materials_path"] = self.paths["materials_path"]
+        options["scripts_path"] = self.paths["scripts_path"]
+
+        persist_options()
         handle_frame_type()
 
     def path_changed(self, which, path):
@@ -639,8 +655,6 @@ def reconstruct_cfg(data_map, indent=0):
     return lines
 
 # Simply write to the cfg file line by line, making sure that we clear the file first
-
-
 def write_cfg(path, lines):
     open(path, 'w').close()
     with open(path, "a") as f:
@@ -669,7 +683,8 @@ def get_weapons():
                 "name": wep.group(1),
                 "cfg": parse_cfg(f.readlines())
             }
-            datum["xhair"] = datum["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split("/")[-1]
+            datum["xhair"] = datum["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split(
+                "/")[-1]
             data.append(datum)
 
     return data
@@ -684,29 +699,30 @@ def sort_entries(entries, sort_arr):
             entries.sort(key=lambda x: x["name"], reverse=direction)
         else:
             order = {"Scout": 1, "Soldier": 2, "Pyro": 3, "Demoman": 4,
-                    "Heavy": 5, "Engineer": 6, "Medic": 7, "Sniper": 8, "Spy": 9}
+                     "Heavy": 5, "Engineer": 6, "Medic": 7, "Sniper": 8, "Spy": 9}
 
-        def sort_value(item):
-            asc = weapon_associations[item["name"]]
-            val = order[asc["class"]] * 100
+            def sort_value(item):
+                asc = weapon_associations[item["name"]]
+                val = order[asc["class"]] * 100
 
-            for i in range(len(asc["display"])):
-                o = ord(asc["display"][i])
+                for i in range(len(asc["display"])):
+                    o = ord(asc["display"][i])
 
-                lwr = (o > 65) and (o < 90)
-                upr = (o > 90) and (o < 122)
+                    lwr = (o > 65) and (o < 90)
+                    upr = (o > 90) and (o < 122)
 
-                if not lwr and not upr:
-                    continue
+                    if not lwr and not upr:
+                        continue
 
-                ind = (o - 64) if lwr else (o - 89)
-                val += (10 ** -i) * ind
+                    ind = (o - 64) if lwr else (o - 89)
+                    val += (10 ** -i) * ind
 
-            return val
+                return val
 
-        entries.sort(key=sort_value, reverse=direction)
+            entries.sort(key=sort_value, reverse=direction)
     else:
         entries.sort(key=lambda x: x["xhair"], reverse=direction)
+
 
 # Prepare entries for display by filtering out any extra files and sorting
 # If display by category is enabled, sort by Class index, then alphabetically
@@ -722,8 +738,6 @@ def build_entries():
 
 # Search through materials/vgui/replay/thumbnails for vtf files
 # (arbitrarily choose vtf and discard vmts since both should be present for each xhair)
-
-
 def get_crosshairs():
     xp = "{}/vgui/replay/thumbnails".format(options["materials_path"])
 
@@ -741,22 +755,19 @@ def check_folders(spath, mpath):
         and len(os.listdir(xhair_path)) > 0
 
 
-def persist_data(data):
-    if not type(data) == dict:
-        return
-
+def persist_options():
     with open(constants["data_dir"], "w") as f:
-        f.write(json.dumps(data))
+        f.write(json.dumps(options))
 
 
-def clear_persisted_data():
+def clear_persisted_options():
     open(constants["data_dir"], "w").close()
 
-    options["materials_path"] = constants["default_materials_path"]
-    options["scripts_path"] = constants["default_scripts_path"]
+    options = constants["defaults"].copy()
 
 
-def retrieve_persisted_data():
+def retrieve_persisted_options():
+    global options
     data = {}
 
     try:
@@ -765,21 +776,23 @@ def retrieve_persisted_data():
     except:
         pass
 
-    return data
+    print(len(data))
+
+    if len(data) == len(options):
+        options = data
 
 
 def handle_frame_type():
-    pd = retrieve_persisted_data()
+    retrieve_persisted_options()
     # Paths in persisted data are correct (these take precedence)
-    p_check = len(pd) > 0 and check_folders(
-        pd["scripts_path"], pd["materials_path"])
+    p_check = check_folders(options["scripts_path"], options["materials_path"])
     # Paths relative to the executable are correct
-    d_check = check_folders(options["scripts_path"], options["materials_path"])
+    d_check = check_folders(constants["defaults"]["scripts_path"], constants["defaults"]["materials_path"])
 
     if p_check or d_check:
-        if p_check:
-            options["scripts_path"] = pd["scripts_path"]
-            options["materials_path"] = pd["materials_path"]
+        if not p_check and d_check:
+            options["scripts_path"] = constants["defaults"]["scripts_path"]
+            options["materials_path"] = constants["defaults"]["materials_path"]
 
         make_frame(True)
     else:
@@ -789,9 +802,9 @@ def handle_frame_type():
 def make_frame(type):
     if type:
         entries = build_entries()
-        CrosshairFrame(None, "VTF Crosshair Changer", (850, 600), entries)
+        CrosshairFrame(None, "VTF Crosshair Changer", constants["window_size"], entries)
     else:
-        DirPickerFrame(None, "Error", (600, 200), ui["error_msg"])
+        DirPickerFrame(None, "Error", constants["error_window_size"], ui["error_msg"])
 
 
 if __name__ == "__main__":
