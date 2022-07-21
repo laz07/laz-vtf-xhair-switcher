@@ -21,7 +21,7 @@ options = {
 	"logs_path": "xhs_logs.txt",
 	"xhair_path": "materials/vgui/replay/thumbnails/",
 	"scripts_path": "scripts/",
-	"backup_scripts": True,
+	"backup_scripts": False,
 	"backup_folder_path": "scripts/backup_{}".format(gen_hash()),
 	"weapon_display_type": False,
 }
@@ -114,7 +114,6 @@ class CrosshairFrame(wx.Frame):
 		box_buttons.Add(self.dup_all_button)
 
 		self.xhair_preview = wx.Panel(self.main_panel)
-		self.draw_crosshair()
 
 		box_controls.Add(box_buttons, wx.SizerFlags().Expand().Proportion(50))
 		box_controls.Add(self.xhair_preview,  wx.SizerFlags().Expand().Proportion(50))
@@ -210,12 +209,8 @@ class CrosshairFrame(wx.Frame):
 			self.dup_slot_button.Disable()
 
 	def draw_crosshair(self):
-		# VTFLib only works on Windows
-		#if platform.system() != "Windows":
-		#	return
-
-		img = wx.Image("xhair.ico").ConvertToBitmap()
-		self.xhair_preview = wx.StaticBitmap(self.main_panel, -1, img, (10, 5), (16, 16))
+		#stub, todo
+		pass
 
 	# Populate list box with weapon 
 	def populate_list(self):
@@ -321,7 +316,7 @@ class CrosshairFrame(wx.Frame):
 		asc = weapon_associations[entry["name"]]
 
 		def addText(text, color):
-			self.text.SetDefaultStyle(wx.TextAttr(color))
+			self.text.SetDefaultStyle(wx.TextAttr(color)) # doesnt work on windows? very unfortunate
 			self.text.AppendText(text)
 
 		self.text.SetValue("")
