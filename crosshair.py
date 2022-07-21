@@ -529,7 +529,7 @@ def get_weapons():
 
 	return data
 
-# Prepare entries for display by Filter out any extra files and sorting
+# Prepare entries for display by filtering out any extra files and sorting
 # If display by category is enabled, sort by Class index, then alphabetically
 # If display by weapon class is enabled, simply sort alphabetically
 def build_entries():

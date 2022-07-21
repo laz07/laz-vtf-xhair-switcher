@@ -24,7 +24,7 @@ If you want to be able to run the program from your desktop, for example, you ca
 
 # Build
 
-If you want to build the code yourself, make sure you have Python 3.7 installed, clone the repo, cd into it, and type 
+If you want to build the code yourself, make sure you have Python 3.7 and pip3 installed, clone the repo, cd into it, and type 
 ```pip install -r requirements.txt```
 
 Then, to generate an .exe output, type

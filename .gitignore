@@ -1,5 +1,5 @@
-dist
-build
+dist/**
+build/**
 crosshair.app
 crosshair.spec
 .vscode
