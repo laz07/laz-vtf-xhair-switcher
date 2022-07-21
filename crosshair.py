@@ -1,5 +1,6 @@
 import re
 import wx
+import wx.lib.mixins.listctrl
 import os
 import shutil
 import datetime
@@ -8,7 +9,6 @@ import platform
 import json
 from associations import *
 from collections import OrderedDict
-
 
 def gen_hash():
     import hashlib
@@ -47,6 +47,13 @@ ui = {
     "error_msg": "Either scripts or thumbnails folder is missing or invalid\nPlease indicate their location below"
 }
 
+
+class FixedWidthListCtrl(wx.ListCtrl, wx.lib.mixins.listctrl.ListCtrlAutoWidthMixin):
+    def __init__(self, parent, ID, pos=wx.DefaultPosition,
+                 size=wx.DefaultSize, style=0):
+        wx.ListCtrl.__init__(self, parent, ID, pos, size, style)
+        wx.lib.mixins.listctrl.ListCtrlAutoWidthMixin.__init__(self)
+        self.setResizeColumn(0)
 
 # Main GUI frame
 class CrosshairFrame(wx.Frame):
@@ -90,11 +97,14 @@ class CrosshairFrame(wx.Frame):
         # Initialize controls for top layout
 
         # Top-left weapon list panel
-        self.list_box = wx.ListBox(self.main_panel, size=(
-            300, -1), choices=[], style=wx.LB_EXTENDED)
-        self.list_box.SetFont(
+        self.weapon_list = FixedWidthListCtrl(self.main_panel, -1, size=(
+            300, -1), style=wx.LC_REPORT)
+
+        self.weapon_list.SetFont(
             wx.Font(constants["font_size"], wx.FONTFAMILY_TELETYPE, wx.NORMAL, wx.NORMAL))
-        self.Bind(wx.EVT_LISTBOX, self.on_list_box, self.list_box)
+        self.weapon_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_list_select)
+        self.weapon_list.Bind(wx.EVT_LIST_COL_CLICK, self.col_click)
+        self.weapon_list_sort = [1,0]
         self.populate_list()
 
         # Top-right weapon info text panel
@@ -135,9 +145,9 @@ class CrosshairFrame(wx.Frame):
         box_weapon_info.Add(
             box_controls, wx.SizerFlags().Expand().Proportion(50))
 
-        box_weapon.Add(self.list_box, wx.SizerFlags().Expand().Proportion(50))
+        box_weapon.Add(self.weapon_list, wx.SizerFlags().Expand().Proportion(50).Border(wx.ALL, 10))
         box_weapon.Add(box_weapon_info,
-                       wx.SizerFlags().Expand().Proportion(50))
+                       wx.SizerFlags().Expand().Proportion(50).Border(wx.ALL, 10))
 
         # Bottom-left logging panel
         self.logger = wx.TextCtrl(
@@ -238,7 +248,11 @@ class CrosshairFrame(wx.Frame):
 
     # Populate list box with weapon
     def populate_list(self):
-        self.list_box.Clear()
+        sort_entries(self.entries, self.weapon_list_sort)
+
+        self.weapon_list.ClearAll()
+        self.weapon_list.InsertColumn(0, "Weapon", width=150)
+        self.weapon_list.InsertColumn(1, "Crosshair", wx.LIST_FORMAT_RIGHT, width=150)
 
         # Get the longest label so that the (crosshair) display can be positioned correctly
         def label_len(x): return len(x["name"] if options["weapon_display_type"]
@@ -247,22 +261,11 @@ class CrosshairFrame(wx.Frame):
             x if label_len(x) > label_len(y) else y), self.entries))
 
         for x in self.entries:
-            item_xhair = x["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split(
-                "/")[-1]
+            label = x["name"] if options["weapon_display_type"] else "{}: {}".format(weapon_associations[x["name"]]["class"], weapon_associations[x["name"]]["display"])
+            
+            self.weapon_list.Append([label, x["xhair"]])
 
-            if options["weapon_display_type"]:
-                label = x["name"]
-                self.list_box.Append("{}{}({})".format(
-                    label, ' ' * (longest - len(label) + 3), item_xhair))
-            else:
-                item_name = weapon_associations[x["name"]]["class"]
-                item_display = weapon_associations[x["name"]]["display"]
-                label = "{}: {}".format(item_name, item_display)
-
-                self.list_box.Append("{}{}({})".format(
-                    label, ' ' * (longest - len(label) + 3), item_xhair))
-
-        self.list_box.EnsureVisible(0)
+        self.weapon_list.EnsureVisible(0)
 
     def backup_scripts(self):
         if os.path.isdir(constants["backup_folder_path"]):
@@ -301,6 +304,8 @@ class CrosshairFrame(wx.Frame):
             else:
                 entry["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"] = "/".join(
                     fname.split("/")[:-1]) + "/" + cur_xhair
+                entry["xhair"] = cur_xhair
+
                 out = reconstruct_cfg(entry["cfg"])
                 write_cfg(entry["path"], out)
                 self.logs_add("{} changed from {} to {}".format(
@@ -349,13 +354,25 @@ class CrosshairFrame(wx.Frame):
         elif label == ui["chk_backup_scripts"]:
             options["backup_scripts"] = checked
 
-    def on_list_box(self, event):
+    def on_list_select(self, event):
         display = {"classes": [], "weapons": [],
                    "categories": [], "affected": []}
 
+        def get_selected_items():
+            s = []
+            it = -1
+            while (True):
+                nxt = self.weapon_list.GetNextSelected(it)
+                if nxt == -1:
+                    return s
+                
+                s.append(nxt)
+                it = nxt
+
+        selected = get_selected_items()
         self.cur_entries = []
 
-        for i in self.list_box.GetSelections():
+        for i in selected:
             entry = self.entries[i]
             asc = weapon_associations[entry["name"]]
 
@@ -371,8 +388,7 @@ class CrosshairFrame(wx.Frame):
 
             self.cur_entries.append(
                 list(filter(lambda x: x["name"] == entry["name"], self.entries))[0])
-            cur_xhair = self.cur_entries[-1]["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split(
-                "/")[-1]
+            cur_xhair = self.cur_entries[-1]["xhair"]
 
             self.xhair_choice.SetSelection(self.xhairs.index(cur_xhair))
             self.toggle_controls(True)
@@ -384,7 +400,7 @@ class CrosshairFrame(wx.Frame):
 
         self.text.SetValue("")
 
-        if len(self.list_box.GetSelections()) > 1:
+        if len(selected) > 1:
             addText("<multiple>\n", wx.BLACK)
 
         addText("Class{}: ".format("es" if len(
@@ -401,7 +417,7 @@ class CrosshairFrame(wx.Frame):
 
         addText("Slot: ", wx.BLUE)
 
-        if len(self.list_box.GetSelections()) > 1:
+        if len(selected) > 1:
             addText("<multiple>\n\n", wx.BLACK)
         else:
             addText("{}\n\n".format({1: "Primary", 2: "Secondary", 3: "Melee", 4: "PDA"}[
@@ -427,6 +443,14 @@ class CrosshairFrame(wx.Frame):
                 self.btn_apply_slot.Disable()
 
         self.text.ScrollPages(-100)
+
+    def col_click(self, event):
+        col = event.GetColumn()
+        cur = self.weapon_list_sort[col] 
+        self.weapon_list_sort[col] = 1 if cur == 0 else cur * -1
+        self.weapon_list_sort[1 if col == 0 else 0] = 0
+        
+        self.populate_list()
 
     def btn_change_folders_clicked(self, event):
         self.Close()
@@ -630,25 +654,22 @@ def get_weapons():
                 "name": wep.group(1),
                 "cfg": parse_cfg(f.readlines())
             }
+            datum["xhair"] = datum["cfg"]["WeaponData"]["TextureData"]["\"crosshair\""]["file"].split("/")[-1]
             data.append(datum)
 
     return data
 
-# Prepare entries for display by filtering out any extra files and sorting
-# If display by category is enabled, sort by Class index, then alphabetically
-# If display by weapon class is enabled, simply sort alphabetically
 
+def sort_entries(entries, sort_arr):
+    which = sort_arr[0] == 0
+    direction = sort_arr[1 if which else 0] < 0
 
-def build_entries():
-    weps = get_weapons()
-
-    entries = [x for x in weps if x["name"] in weapon_associations]
-
-    if options["weapon_display_type"]:
-        entries.sort(key=lambda x: x["name"])
-    else:
-        order = {"Scout": 1, "Soldier": 2, "Pyro": 3, "Demoman": 4,
-                 "Heavy": 5, "Engineer": 6, "Medic": 7, "Sniper": 8, "Spy": 9}
+    if not which:
+        if options["weapon_display_type"]:
+            entries.sort(key=lambda x: x["name"], reverse=direction)
+        else:
+            order = {"Scout": 1, "Soldier": 2, "Pyro": 3, "Demoman": 4,
+                    "Heavy": 5, "Engineer": 6, "Medic": 7, "Sniper": 8, "Spy": 9}
 
         def sort_value(item):
             asc = weapon_associations[item["name"]]
@@ -668,7 +689,20 @@ def build_entries():
 
             return val
 
-        entries.sort(key=sort_value)
+        entries.sort(key=sort_value, reverse=direction)
+    else:
+        entries.sort(key=lambda x: x["xhair"], reverse=direction)
+
+# Prepare entries for display by filtering out any extra files and sorting
+# If display by category is enabled, sort by Class index, then alphabetically
+# If display by weapon class is enabled, simply sort alphabetically
+def build_entries():
+    weps = get_weapons()
+
+    entries = [x for x in weps if x["name"] in weapon_associations]
+
+    sort_entries(entries, [1, 0])
+
     return entries
 
 # Search through materials/vgui/replay/thumbnails for vtf files
