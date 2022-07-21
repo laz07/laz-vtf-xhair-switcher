@@ -53,7 +53,8 @@ cn = {
         "xhair_image_frame_title": "Add Crosshair PNGs",
         "xhair_image_content_msg": "PNG will be copied to your user directory with the name of the crosshair",
         "xhair_image_no_content_msg": "You have not added any additional crosshairs in this folder. Once you add some, you'll be able to assign PNGs to them here.",
-        
+        "about_msg": "Made by Max \"laz\" M",
+
         "menubar_file_open_text": "Open Folder",
         "menubar_file_open_description": "Open Crosshair Folder",
         "menubar_file_opts_text": "Options",
@@ -65,12 +66,17 @@ cn = {
         "menubar_file_quit_text": "Quit",
         "menubar_file_quit_description": "Quit application",
 
+        "menubar_about_about_text": "About",
+        "menubar_about_about_description": "About",
+
+
         "window_size": (950, 600),
         "window_size_options": (500, 150),
         "window_size_min": (900, 500),
         "window_size_options_frame": (500, 135),
         "window_size_info_frame": (500, 150),
         "window_size_crosshair_image_frame": (500, 135),
+        "window_size_about_frame": (500, 135),
 
         "xhair_preview_background_color": wx.Colour(150, 150, 150)
     }

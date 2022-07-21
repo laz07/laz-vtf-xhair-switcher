@@ -58,6 +58,7 @@ class CrosshairFrame(wx.Frame):
     def setup_menu_bar(self):
         self.menu_bar = wx.MenuBar()
         file_menu = wx.Menu()
+        about_menu = wx.Menu()
 
         file_open_item = file_menu.Append(wx.ID_OPEN, cn["ui"]["menubar_file_open_text"], cn["ui"]["menubar_file_open_description"])
         file_opts_item = file_menu.Append(wx.ID_PROPERTIES, cn["ui"]["menubar_file_opts_text"], cn["ui"]["menubar_file_opts_description"])
@@ -65,7 +66,10 @@ class CrosshairFrame(wx.Frame):
         file_add_xhairs_item = file_menu.Append(wx.Window.NewControlId(), cn["ui"]["menubar_file_add_xhairs_text"], cn["ui"]["menubar_file_add_xhairs_description"])
         file_quit_item = file_menu.Append(wx.ID_EXIT, cn["ui"]["menubar_file_quit_text"], cn["ui"]["menubar_file_quit_description"])
 
+        about_about_item = about_menu.Append(wx.Window.NewControlId(), cn["ui"]["menubar_about_about_text"], cn["ui"]["menubar_about_about_description"])
+
         self.menu_bar.Append(file_menu, 'File')
+        self.menu_bar.Append(about_menu, 'About')
 
         def change_folders_dialog(func):
             def _func(e, parent=None):
@@ -140,6 +144,17 @@ class CrosshairFrame(wx.Frame):
                 make_frame=make_frame
             )
         self.Bind(wx.EVT_MENU, add_xhairs_item_action, file_add_xhairs_item)
+
+
+        self.Bind(
+            wx.EVT_MENU, 
+            lambda _: InfoFrame(
+                self, "About", cn["ui"]["window_size_about_frame"],
+                info_text=cn["ui"]["about_msg"], 
+                btn_text="Close",
+                btn_func=lambda _, frame: frame.Close() 
+            ), 
+            about_about_item)
 
 
         self.SetMenuBar(self.menu_bar)
