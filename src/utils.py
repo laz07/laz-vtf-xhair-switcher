@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 
 from PyQt6.QtWidgets import QApplication
 
@@ -100,6 +101,10 @@ def format_path_by_os(path):
     delim = "\\" if is_windows else "/"
 
     return path.replace("\\", delim).replace("/", delim)
+
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+    return os.path.join(base_path, relative_path)
 
 def get_app():
   return QApplication.instance()

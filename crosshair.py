@@ -5,8 +5,8 @@ import ctypes
 
 sys.path.insert(0, os.path.abspath('./src'))
 
-from utils import initialize_local_storage
-from app.main import show_app
+from src.utils import initialize_local_storage
+from src.app.main import show_app
 
 # Get the icon to show on the windows taskbar
 myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string

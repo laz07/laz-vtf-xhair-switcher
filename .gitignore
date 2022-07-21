@@ -1,7 +1,6 @@
 dist/**
 build/**
 crosshair.app
-crosshair.spec
 .vscode
 __pycache__
 materials/**

@@ -12,10 +12,11 @@ LOGS_PATH = "xhs_logs.txt"
 XHAIR_PREVIEW_PATH = "{}/preview/"  # Format with materials directory
 XHAIR_PREVIEW_BG = '#aaa'
 
-ICON_APP = "assets/app.png"
-ICON_UNDO = "assets/undo.png"
-ICON_REDO = "assets/redo.png"
-ICON_INFO = "assets/info.png"
+ASSET_ICON_APP = "assets/app.png"
+ASSET_ICON_UNDO = "assets/undo.png"
+ASSET_ICON_REDO = "assets/redo.png"
+ASSET_ICON_INFO = "assets/info.png"
+ASSET_SAMPLE_SCRIPTS = "assets/sample-scripts"
 
 APPLY_SELECTION = 'apply'
 APPLY_CLASS = 'class'

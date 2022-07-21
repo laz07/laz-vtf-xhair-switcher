@@ -1,4 +1,5 @@
 import re
+import string
 from collections import OrderedDict
 from sysconfig import parse_config_h
 from constants.regex import RE_BRACKET_OPEN, RE_BRACKET_CLOSE, RE_DATA, RE_COMMENT, RE_HEADER
@@ -57,7 +58,8 @@ class CfgParser:
     cmts = 0
 
     while it < len(cfg):
-        ln = cfg[it]
+
+        ln = ''.join([str(char) for char in cfg[it] if char in string.printable])
 
         data_match = re.search(RE_DATA, ln)
         cmt_match = re.search(RE_COMMENT, ln)

@@ -3,7 +3,6 @@ import os
 import pickle
 import re
 import shutil
-from xml.dom.pulldom import SAX2DOM
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
@@ -12,11 +11,11 @@ from PyQt6.QtCore import *
 from constants.associations import weapon_associations, reverse_associations
 from constants.regex import RE_WEAPON
 from constants.ui import *
-from constants.constants import DATA_DIR, ICON_APP, APPLY_SELECTION,\
+from constants.constants import DATA_DIR, ASSET_ICON_APP, ASSET_SAMPLE_SCRIPTS, APPLY_SELECTION,\
   APPLY_CLASS, APPLY_SLOT, APPLY_ALL, BULK_APPLY_OPTIONS, ITALIC_TAG, BOLD_TAG
 
 from utils import change_xhair_in_cfg, prepare_entries, gen_hash, \
-  get_xhair_from_cfg, get_xhairs, write_cfg, format_path_by_os
+  get_xhair_from_cfg, get_xhairs, write_cfg, format_path_by_os, resource_path
 from parser import CfgParser
 
 from app.controls import Controls
@@ -88,7 +87,7 @@ class CrosshairApp(QApplication):
     self.window.setWindowTitle('VTF Crosshair Changer')
     self.window.setGeometry(100, 100, 800, 400)
     self.window.move(60, 15)
-    self.window.setWindowIcon(QIcon(ICON_APP))
+    self.window.setWindowIcon(QIcon(resource_path(ASSET_ICON_APP)))
 
     self.wid = QWidget(self.window)
     self.window.setCentralWidget(self.wid)
@@ -118,11 +117,7 @@ class CrosshairApp(QApplication):
 
     for cfg in self.parser.cfgs.keys():
       cfg_valid = self.parser.validate_cfg(self.parser.cfgs[cfg])
-      if not cfg_valid:
-        print(cfg, cfg_valid)
       is_valid = is_valid and cfg_valid
-
-    print(is_valid)
 
     self.OptionSignal.connect(self.on_option_changed)
     self.ApplySignal.connect(self.on_apply)
@@ -175,18 +170,19 @@ class CrosshairApp(QApplication):
       not os.path.isdir("{}/materials/vgui/replay/thumbnails".format(path))
 
     if invalid_path:
-      msg = QMessageBox()
-      msg.setIcon(QMessageBox.Icon.Critical)
-      msg.setText(PATHSELECT_INVALID_DIALOG_TEXT)
-      msg.setInformativeText(PATHSELECT_INVALID_DIALOG_INFO_TEXT)
-      msg.setWindowTitle(PATHSELECT_INVALID_DIALOG_TITLE)
-      msg.setStandardButtons(QMessageBox.StandardButton.Retry | QMessageBox.StandardButton.Close)
-      sel = msg.exec()
+      if not self.options.cfg_path:
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setText(PATHSELECT_INVALID_DIALOG_TEXT)
+        msg.setInformativeText(PATHSELECT_INVALID_DIALOG_INFO_TEXT)
+        msg.setWindowTitle(PATHSELECT_INVALID_DIALOG_TITLE)
+        msg.setStandardButtons(QMessageBox.StandardButton.Retry | QMessageBox.StandardButton.Close)
+        sel = msg.exec()
 
-      if sel == QMessageBox.StandardButton.Retry:
-        self.handle_path_select()
-      else:
-        sys.exit()
+        if sel == QMessageBox.StandardButton.Retry:
+          self.handle_path_select()
+        else:
+          sys.exit()
     else:
       self.options.cfg_path = path
 
@@ -271,7 +267,7 @@ class CrosshairApp(QApplication):
     if len(weapons) == 0:
       return
 
-    sample_dir = "assets/sample-scripts"
+    sample_dir = resource_path(ASSET_SAMPLE_SCRIPTS)
     scripts_dir = os.path.join(self.options.cfg_path, "scripts")
 
     for weapon in weapons:
@@ -412,13 +408,16 @@ class CrosshairApp(QApplication):
     self.table.populate(self.parser.cfgs)
 
   def on_path_change(self):
-    self.options.cfg_path = ''
+    old_path = self.options.cfg_path
+
     self.handle_path_select()
-    self.xhairs = get_xhairs("{}/materials/vgui/replay/thumbnails".format(self.options.cfg_path))
-    self.parse_cfgs()
-    self.table.populate(self.parser.cfgs)
-    self.top_bar.path.setText(self.options.cfg_path)
-    self.add_log('Changed path to {}'.format(ITALIC_TAG).format(self.options.cfg_path))
+
+    if old_path != self.options.cfg_path:
+      self.xhairs = get_xhairs("{}/materials/vgui/replay/thumbnails".format(self.options.cfg_path))
+      self.parse_cfgs()
+      self.table.populate(self.parser.cfgs)
+      self.top_bar.path.setText(self.options.cfg_path)
+      self.add_log('Changed path to {}'.format(ITALIC_TAG).format(self.options.cfg_path))
 
 
 
