@@ -30,7 +30,7 @@ constants = {
     },
     "default_materials_path": "materials",
     "default_scripts_path": "scripts",
-    "backup_folder_path": "scripts/backup_{}".format(gen_hash()),
+    "backup_folder_path": "{}/backup_" + gen_hash(),
     "window_size": (950, 600),
     "error_window_size": (600, 250),
     "min_window_size": (700, 500),
@@ -110,6 +110,8 @@ class CrosshairFrame(wx.Frame):
         self.weapon_list.Bind(wx.EVT_LIST_ITEM_SELECTED, self.on_list_select)
         self.weapon_list.Bind(wx.EVT_LIST_COL_CLICK, self.col_click)
         self.weapon_list_sort = [1, 0]
+        self.last_selection = 0
+
         self.populate_list()
 
         # Top-right weapon info text panel
@@ -206,7 +208,6 @@ class CrosshairFrame(wx.Frame):
             os.path.abspath(options["scripts_path"])))
         self.logs_add("Crosshairs being read from {}/vgui/replay/thumbnails/".format(
             os.path.abspath(options["materials_path"])))
-
     # Logs
 
     # Add a log with a timestamp and show in logger
@@ -244,11 +245,14 @@ class CrosshairFrame(wx.Frame):
             self.btn_apply.Enable()
             self.btn_apply_class.Enable()
             self.btn_apply_slot.Enable()
+            self.btn_apply_all.Enable()
         else:
             self.xhair_choice.Disable()
             self.btn_apply.Disable()
             self.btn_apply_class.Disable()
             self.btn_apply_slot.Disable()
+            self.btn_apply_all.Disable()
+
 
     def draw_crosshair(self):
         if len(self.cur_entries) > 1:
@@ -289,13 +293,17 @@ class CrosshairFrame(wx.Frame):
 
             self.weapon_list.Append([label, x["xhair"]])
 
-        self.weapon_list.EnsureVisible(0)
+        self.weapon_list.EnsureVisible(self.last_selection)
+
 
     def backup_scripts(self):
-        if os.path.isdir(constants["backup_folder_path"]):
+        backup_path = constants["backup_folder_path"].format(options["scripts_path"])
+
+        if os.path.isdir(backup_path):
             return
 
-        os.mkdir(constants["backup_folder_path"])
+        os.mkdir(backup_path)
+
         files = [f for f in os.listdir(options["scripts_path"]) if os.path.isfile(
             os.path.join(options["scripts_path"], f))]
         re_weapon = "^(tf_weapon_[a-zA-Z_]+)\.txt$"
@@ -305,9 +313,10 @@ class CrosshairFrame(wx.Frame):
                 continue
 
             shutil.copyfile("{}/{}".format(options["scripts_path"], file), "{}/{}".format(
-                constants["backup_folder_path"], file))
-            self.logs_add("Backed up {} to folder /{}/".format(file,
-                                                               constants["backup_folder_path"]))
+                backup_path, file))
+            self.logs_add("Backed up {} to folder {}".format(file,
+                                                               constants["backup_folder_path"].format(options["scripts_path"])))
+
 
     def btn_apply_clicked(self, event):
         label = event.GetEventObject().GetLabel()
@@ -470,6 +479,7 @@ class CrosshairFrame(wx.Frame):
             else:
                 self.btn_apply_slot.Disable()
 
+            self.last_selection = selected[0]
         self.text.ScrollPages(-100)
 
     def col_click(self, event):
@@ -761,6 +771,7 @@ def persist_options():
 
 
 def clear_persisted_options():
+    global options
     open(constants["data_dir"], "w").close()
 
     options = constants["defaults"].copy()
@@ -776,8 +787,6 @@ def retrieve_persisted_options():
     except:
         pass
 
-    print(len(data))
-
     if len(data) == len(options):
         options = data
 
@@ -788,6 +797,7 @@ def handle_frame_type():
     p_check = check_folders(options["scripts_path"], options["materials_path"])
     # Paths relative to the executable are correct
     d_check = check_folders(constants["defaults"]["scripts_path"], constants["defaults"]["materials_path"])
+
 
     if p_check or d_check:
         if not p_check and d_check:
