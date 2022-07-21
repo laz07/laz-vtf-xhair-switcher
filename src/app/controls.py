@@ -1,12 +1,12 @@
 import os
 import sys
-from vtf2img import Parser
 from math import floor
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
+from vtf2img import Parser
 from utils import get_app
 from app.selector import Selector
 from app.options import Options

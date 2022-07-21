@@ -21,3 +21,7 @@ pyinstaller crosshair.spec
 ```
 
 You should see a crosshair.exe in a newly-created dist folder in that directory.
+
+# Acknowledgments
+
+Thanks to julienc91 for his vtf2img library (https://github.com/julienc91/vtf2img), which I yoinked into this codebase because PyInstaller was complaining about importing it as a module

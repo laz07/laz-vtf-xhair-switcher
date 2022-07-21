@@ -105,7 +105,7 @@ class CrosshairApp(QApplication):
     if (not self.options.cfg_path or len(self.options.cfg_path) == 0):
       self.handle_path_select()
 
-    self.xhairs = get_xhairs("{}/materials/vgui/replay/thumbnails".format(self.options.cfg_path))
+    self.xhairs = get_xhairs(os.path.join(self.options.cfg_path, "materials/vgui/replay/thumbnails"))
 
     self.build_gui()
     self.parser = CfgParser()
