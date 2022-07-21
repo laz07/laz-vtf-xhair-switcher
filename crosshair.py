@@ -1,34 +1,17 @@
-# VTF crosshair switcher, v1.2, by laz
+# VTF crosshair switcher, v3, by laz
 import os
 import sys
-import wx
+import ctypes
 
-sys.path.append(os.path.abspath('/src'))
-sys.path.append(os.path.abspath('/src/ui'))
+sys.path.insert(0, os.path.abspath('./src'))
 
-from app.utils import initialize_local_storage, retrieve_persisted_options, valid_xhair_folder
-from app.constants import cn
-from app.ui.CrosshairFrame import make_frame
+from src.utils import initialize_local_storage
+from src.app.main import show_app
 
-# Decide on which frame to show based on the user's saved settings and
-# whether the relevant folders exist and aren't empty
-def handle_frame_type():
-    retrieve_persisted_options()
-    # Paths in persisted data are correct (these take precedence)
-    p_check = valid_xhair_folder(cn["options"]["folder_path"])
-    # Paths relative to the executable are correct
-    d_check = valid_xhair_folder(cn["constants"]["defaults"]["folder_path"])
-
-
-    if p_check or d_check:
-        if not p_check and d_check:
-            cn["options"]["folder_path"] = cn["constants"]["defaults"]["folder_path"]
-
-    make_frame()
+# Get the icon to show on the windows taskbar
+myappid = 'mycompany.myproduct.subproduct.version' # arbitrary string
+ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 if __name__ == "__main__":
     initialize_local_storage()
-
-    a = wx.App()
-    handle_frame_type()
-    a.MainLoop()
+    show_app()
