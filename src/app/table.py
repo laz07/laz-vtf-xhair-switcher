@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
+from src.utils import get_association
 
 from utils import get_app, get_xhair_from_cfg
 
@@ -22,16 +23,19 @@ class Table(QTableWidget):
       lambda: get_app().WeaponSelectSignal.emit([x.text() for x in self.selectedItems()])
     )
 
-  def populate(self, cfgs):
+  def populate(self, cfgs, display_type):
     """ Populate contents of the main table using the parsed configs """
     if len(cfgs) > 0:
       self.setRowCount(len(cfgs))
       self.setSortingEnabled(False)
 
       i = 0
-      for label, cfg in cfgs.items():
+      for key, cfg in cfgs.items():
+        data = get_association(key)
+        label = "{}: {}".format(data["class"], data["display"]) if display_type else key
         self.setItem(i, 0, QTableWidgetItem(label))
         self.setItem(i, 1, QTableWidgetItem(get_xhair_from_cfg(cfg)))
         i += 1
 
+      self.horizontalHeader().setSortIndicator(-1, Qt.SortOrder.AscendingOrder);
       self.setSortingEnabled(True)

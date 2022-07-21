@@ -1,3 +1,4 @@
+from audioop import reverse
 import os
 import re
 import sys
@@ -6,7 +7,7 @@ from PyQt6.QtWidgets import QApplication
 
 from constants.constants import FOLDER_PATH, DATA_DIR
 from constants.regex import RE_WEAPON
-from constants.associations import weapon_associations
+from constants.associations import weapon_associations, reverse_associations
 
 # generate a (probably) unique hash to append to the
 # backup folders' names to give each folder a unique name
@@ -105,6 +106,22 @@ def format_path_by_os(path):
 def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
     return os.path.join(base_path, relative_path)
+
+def wep_display_to_code(display):
+  if display not in reverse_associations:
+    return None
+
+  return reverse_associations[display]["code"]
+
+def get_association(weapon):
+  ''' Get weapon data, either from a tf_weapon string or by the display name '''
+
+  if weapon in weapon_associations:
+    return weapon_associations[weapon]
+  elif weapon in reverse_associations:
+    return reverse_associations[weapon]
+
+  return None
 
 def get_app():
   return QApplication.instance()

@@ -8,14 +8,17 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
-from constants.associations import weapon_associations, reverse_associations
+from constants.associations import weapon_associations
 from constants.regex import RE_WEAPON
-from constants.ui import *
+from constants.ui import PATHSELECT_INVALID_DIALOG_TEXT, PATHSELECT_INVALID_DIALOG_INFO_TEXT, \
+  PATHSELECT_INVALID_DIALOG_TITLE
 from constants.constants import DATA_DIR, ASSET_ICON_APP, ASSET_SAMPLE_SCRIPTS, APPLY_SELECTION,\
   APPLY_CLASS, APPLY_SLOT, APPLY_ALL, BULK_APPLY_OPTIONS, ITALIC_TAG, BOLD_TAG
+from utils import get_association
 
 from utils import change_xhair_in_cfg, prepare_entries, gen_hash, \
-  get_xhair_from_cfg, get_xhairs, write_cfg, format_path_by_os, resource_path
+  get_xhair_from_cfg, get_xhairs, write_cfg, format_path_by_os, \
+  resource_path, initialize_local_storage
 from parser import CfgParser
 
 from app.controls import Controls
@@ -100,24 +103,14 @@ class CrosshairApp(QApplication):
 
     self.options = CrosshairAppOptions()
     self.retrieve_options()
-    self.associations = reverse_associations if self.options.weapon_display_type else weapon_associations
 
     if (not self.options.cfg_path or len(self.options.cfg_path) == 0):
       self.handle_path_select()
 
-    self.xhairs = get_xhairs(os.path.join(self.options.cfg_path, "materials/vgui/replay/thumbnails"))
-
     self.build_gui()
     self.parser = CfgParser()
 
-    self.parse_cfgs()
-    self.table.populate(self.parser.cfgs)
-
-    is_valid = True
-
-    for cfg in self.parser.cfgs.keys():
-      cfg_valid = self.parser.validate_cfg(self.parser.cfgs[cfg])
-      is_valid = is_valid and cfg_valid
+    self.initialize()
 
     self.OptionSignal.connect(self.on_option_changed)
     self.ApplySignal.connect(self.on_apply)
@@ -131,6 +124,18 @@ class CrosshairApp(QApplication):
     self.exec()
     self.write_options()
 
+  def populate_table(self):
+    self.table.populate(self.parser.cfgs, self.options.weapon_display_type)
+
+  def initialize(self):
+    self.xhairs = get_xhairs("{}/materials/vgui/replay/thumbnails".format(self.options.cfg_path))
+    initialize_local_storage()
+    self.parse_cfgs()
+    self.controls.generate_previews(self.xhairs)
+    self.controls.selector.combo.clear()
+    self.controls.selector.combo.addItems([x["name"] for x in self.xhairs])
+    self.populate_table()
+    self.top_bar.path.setText(self.options.cfg_path)
 
   def build_gui(self):
     """ Create layout and instantiate all  portions of the UI """
@@ -199,9 +204,7 @@ class CrosshairApp(QApplication):
     self.parser.invalid_scripts = []
 
     for entry in self.entries:
-      label = entry["name"] if not self.options.weapon_display_type else \
-        "{}: {}".format(weapon_associations[entry["name"]]["class"], weapon_associations[entry["name"]]["display"])
-
+      label = entry["name"]
       parsed = self.parser.parse_cfg(entry["contents"])
 
       if self.parser.validate_cfg(parsed):
@@ -230,6 +233,7 @@ class CrosshairApp(QApplication):
     """ Pickle and store options to the user directory """
     data_path = os.path.join(DATA_DIR, 'data.txt')
 
+    initialize_local_storage()
 
     if os.path.exists(data_path):
       with open(data_path, "w") as f:
@@ -281,7 +285,7 @@ class CrosshairApp(QApplication):
 
     self.add_log("Repaired scripts for {}".format(ITALIC_TAG).format(", ".join(weapons)))
     self.parse_cfgs()
-    self.table.populate(self.parser.cfgs)
+    self.populate_table()
 
 
   # --------- CALLBACKS ----------
@@ -293,7 +297,7 @@ class CrosshairApp(QApplication):
       return
 
     if option == "weapon_display_type":
-      self.associations = reverse_associations if new_val else weapon_associations
+
       setattr(self.options, option, new_val)
     elif option == "custom_apply_groups":
       (name, weapons) = new_val
@@ -310,13 +314,14 @@ class CrosshairApp(QApplication):
       setattr(self.options, option, new_val)
 
     self.parse_cfgs()
-    self.table.populate(self.parser.cfgs)
+    self.populate_table()
 
 
 
   def on_apply(self, action_type, new_xhair):
     """ User has tried to apply a new crosshair to selected weapon(s) """
     changed = []
+    all_weapons = weapon_associations.keys()
 
     def modify(wep):
       if wep not in self.parser.cfgs:
@@ -326,49 +331,51 @@ class CrosshairApp(QApplication):
       changed += [(wep, get_xhair_from_cfg(self.parser.cfgs[wep]) if wep in self.parser.cfgs else None)]
       self.modify_weapon(wep, new_xhair)
 
-
     if action_type in self.options.custom_apply_groups:
       for wep in self.options.custom_apply_groups[action_type]:
         modify(wep)
     else:
       for weapon in [x[0] for x in self.selected_items]:
-        if weapon not in self.parser.cfgs or \
-          (action_type == APPLY_SELECTION and weapon not in self.associations):
+        data = get_association(weapon)
+
+        if not data or data["code"] not in self.parser.cfgs:
           continue
 
         if action_type == APPLY_SELECTION:
-          modify(weapon)
+          modify(data["code"])
+
         elif action_type == APPLY_CLASS:
-          cur_class = self.associations[weapon]["class"]
-          filtered = list(filter(lambda x, check=cur_class : self.associations[x]["class"] == check, self.associations.keys()))
+          cur_class = data["class"]
+          filtered = list(filter(lambda x, check=cur_class : weapon_associations[x]["class"] == check, all_weapons))
 
           for wep in filtered:
             modify(wep)
+
         elif action_type == APPLY_SLOT:
-          cur_slot = self.associations[weapon]["slot"]
-          filtered = list(filter(lambda x, check=cur_slot : self.associations[x]["slot"] == check, self.associations.keys()))
+          cur_slot = data["slot"]
+          filtered = list(filter(lambda x, check=cur_slot : weapon_associations[x]["slot"] == check, all_weapons))
 
           for wep in filtered:
             modify(wep)
 
         elif action_type == APPLY_ALL:
-          for wep in self.associations.keys():
+          for wep in all_weapons:
             modify(wep)
 
     log = ""
 
-    if len(changed) == len(self.parser.cfgs):
-      log = "Changed all weapons to {}".format(BOLD_TAG).format(new_xhair)
-    else:
-      log = "Changed {} to {}".format(ITALIC_TAG, BOLD_TAG).format(", ".join([x[0] for x in changed]), new_xhair)
+    if len(changed) > 0:
+      if len(changed) == len(self.parser.cfgs):
+        log = "Changed all weapons to {}".format(BOLD_TAG).format(new_xhair)
+      else:
+        log = "Changed {} to {}".format(ITALIC_TAG, BOLD_TAG).format(", ".join([x[0] for x in changed]), new_xhair)
 
-    self.add_log(log)
-    if self.options.backup_scripts:
-      self.backup_scripts()
+      self.add_log(log)
+      if self.options.backup_scripts:
+        self.backup_scripts()
 
-    self.options.history.add_item([x[0] for x in changed], [x[1] for x in changed], [new_xhair] * len(changed), log)
-    self.table.populate(self.parser.cfgs)
-    self.WeaponSelectSignal.emit([])
+      self.options.history.add_item([x[0] for x in changed], [x[1] for x in changed], [new_xhair] * len(changed), log)
+      self.populate_table()
 
 
   def on_weapon_selected(self, selected_items):
@@ -405,7 +412,7 @@ class CrosshairApp(QApplication):
       self.modify_weapon(weapon, xhair)
 
     self.add_log("{} `<span style=\"font-style: italic\">{}</span>`".format("Undid" if undo else "Redid", log))
-    self.table.populate(self.parser.cfgs)
+    self.populate_table()
 
   def on_path_change(self):
     old_path = self.options.cfg_path
@@ -413,10 +420,7 @@ class CrosshairApp(QApplication):
     self.handle_path_select()
 
     if old_path != self.options.cfg_path:
-      self.xhairs = get_xhairs("{}/materials/vgui/replay/thumbnails".format(self.options.cfg_path))
-      self.parse_cfgs()
-      self.table.populate(self.parser.cfgs)
-      self.top_bar.path.setText(self.options.cfg_path)
+      self.initialize()
       self.add_log('Changed path to {}'.format(ITALIC_TAG).format(self.options.cfg_path))
 
 
