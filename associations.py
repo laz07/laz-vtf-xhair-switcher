@@ -38,7 +38,7 @@ weapon_associations = {
 	"tf_weapon_pistol_scout": {
 		"class": "Scout",
 		"slot": 2,
-		"display": "Most Pistols",
+		"display": "Stock Pistols",
 		"all": [
 			"Pistol",
 			"Lugermorph",
