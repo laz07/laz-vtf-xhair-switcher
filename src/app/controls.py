@@ -1,10 +1,14 @@
+import hashlib
 import os
 import sys
+import pickle
+from functools import partial
 from math import floor
 
 from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
+from src.constants.constants import PREVIEW_HASH_PATH
 
 from vtf2img import Parser
 from utils import get_app
@@ -44,16 +48,47 @@ class Controls(QGridLayout):
     progress.canceled.connect(lambda: sys.exit(), type=Qt.ConnectionType.DirectConnection)
     progress.forceShow()
 
+    hashes = {}
+    if os.path.exists(PREVIEW_HASH_PATH):
+      with open(PREVIEW_HASH_PATH, "rb") as f:
+        try:
+          hashes = pickle.load(f)
+        except:
+          f.close()
+
+    def gen_preview(xpath, xname, ipath):
+      vtf_parser = Parser(xpath)
+      image = vtf_parser.get_image()
+      image.save(ipath)
+
+      with open(xpath, "rb") as f:
+        cur_hash = hashlib.md5(f.read()).hexdigest()
+        hashes[xname] = cur_hash
+
     for i, xhair in enumerate(xhairs):
       xhair_path = xhair["path"]
-      image_path = os.path.join(DATA_DIR, "previews", "{}.png".format(xhair["name"]))
+      xhair_name = xhair["name"]
+      image_path = os.path.join(DATA_DIR, "previews", "{}.png".format(xhair_name))
+      gen = partial(gen_preview, xhair_path, xhair_name, image_path)
 
-      if not os.path.exists(image_path):
-        vtf_parser = Parser(xhair_path)
-        image = vtf_parser.get_image()
-        image.save(image_path)
+      if os.path.exists(image_path):
+        with open(xhair_path, "rb") as f:
+          cur_hash = hashlib.md5(f.read()).hexdigest()
+
+          if xhair_name not in hashes or cur_hash != hashes[xhair_name]:
+            gen()
+      else:
+        gen()
+
 
       progress.setValue(floor(i / len(xhairs) * 100))
+
+    if os.path.exists(PREVIEW_HASH_PATH):
+      with open(PREVIEW_HASH_PATH, "w") as f:
+        f.close()
+
+    with open(PREVIEW_HASH_PATH, "wb") as f:
+      pickle.dump(hashes, f)
 
     progress.setValue(100)
 

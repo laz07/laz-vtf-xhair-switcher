@@ -2,8 +2,8 @@ from PyQt6.QtWidgets import *
 from PyQt6.QtGui import *
 from PyQt6.QtCore import *
 
-from constants.constants import BULK_APPLY_OPTIONS, APPLY_SELECTION, ITALIC_TAG
-from utils import get_app
+from constants.constants import BULK_APPLY_OPTIONS, APPLY_SELECTION, ITALIC_TAG, BOLD_TAG
+from utils import get_app, get_weapon_code
 
 class Selector(QVBoxLayout):
   def __init__(self, xhairs):
@@ -57,16 +57,23 @@ class Selector(QVBoxLayout):
     if not success or not group:
       return
 
-    get_app().OptionSignal.emit('custom_apply_groups', (group, self.selected_weapons))
+    selected_weapons_codes = [get_weapon_code(x) for x in self.selected_weapons[::2]]
+
+    get_app().OptionSignal.emit('custom_apply_groups', (group, selected_weapons_codes))
     get_app().LogSignal\
       .emit("Added group {} with weapons {}"\
-        .format(ITALIC_TAG, ITALIC_TAG).format(group, ", ".join(self.selected_weapons[::2]))
+        .format(BOLD_TAG, ITALIC_TAG).format(group, ", ".join(selected_weapons_codes))
         )
+
+    self.bulk_button_apply.setEnabled(False)
+    self.bulk_button_delete.setEnabled(False)
 
   def delete_bulk_group(self):
     group = self.bulk_combo.currentText()
     get_app().OptionSignal.emit('custom_apply_groups', (group, None))
     get_app().LogSignal.emit("Deleted group {}".format(ITALIC_TAG).format(group))
+    self.bulk_button_apply.setEnabled(False)
+    self.bulk_button_delete.setEnabled(False)
 
   def on_weapon_select(self, weapons):
     self.selected_weapons = weapons
@@ -84,8 +91,9 @@ class Selector(QVBoxLayout):
 
   def bulk_apply(self):
     custom_selection = self.bulk_combo.currentText()
-
     get_app().ApplySignal.emit(
       BULK_APPLY_OPTIONS[custom_selection] if custom_selection in BULK_APPLY_OPTIONS else custom_selection,
       self.combo.currentText()
     )
+
+

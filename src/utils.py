@@ -107,11 +107,6 @@ def resource_path(relative_path):
     base_path = getattr(sys, '_MEIPASS', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
     return os.path.join(base_path, relative_path)
 
-def wep_display_to_code(display):
-  if display not in reverse_associations:
-    return None
-
-  return reverse_associations[display]["code"]
 
 def get_association(weapon):
   ''' Get weapon data, either from a tf_weapon string or by the display name '''
@@ -122,6 +117,15 @@ def get_association(weapon):
     return reverse_associations[weapon]
 
   return None
+
+def get_weapon_code(str):
+  ''' Convert display to weapon code, or return code if passed in '''
+  data = get_association(str)
+
+  if not data:
+    return None
+
+  return data["code"]
 
 def get_app():
   return QApplication.instance()

@@ -12,7 +12,7 @@ from constants.associations import weapon_associations
 from constants.regex import RE_WEAPON
 from constants.ui import PATHSELECT_INVALID_DIALOG_TEXT, PATHSELECT_INVALID_DIALOG_INFO_TEXT, \
   PATHSELECT_INVALID_DIALOG_TITLE
-from constants.constants import DATA_DIR, ASSET_ICON_APP, ASSET_SAMPLE_SCRIPTS, APPLY_SELECTION,\
+from constants.constants import DATA_FILE_PATH, ASSET_ICON_APP, ASSET_SAMPLE_SCRIPTS, APPLY_SELECTION,\
   APPLY_CLASS, APPLY_SLOT, APPLY_ALL, BULK_APPLY_OPTIONS, ITALIC_TAG, BOLD_TAG
 from utils import get_association
 
@@ -215,10 +215,8 @@ class CrosshairApp(QApplication):
 
   def retrieve_options(self):
     """ Retrieve and unpickle stored options from the user directory """
-    data_path = os.path.join(DATA_DIR, 'data.txt')
-
-    if os.path.exists(data_path):
-      with open(data_path, "rb") as f:
+    if os.path.exists(DATA_FILE_PATH):
+      with open(DATA_FILE_PATH, "rb") as f:
         try:
           loaded = pickle.load(f)
 
@@ -231,15 +229,13 @@ class CrosshairApp(QApplication):
 
   def write_options(self):
     """ Pickle and store options to the user directory """
-    data_path = os.path.join(DATA_DIR, 'data.txt')
-
     initialize_local_storage()
 
-    if os.path.exists(data_path):
-      with open(data_path, "w") as f:
+    if os.path.exists(DATA_FILE_PATH):
+      with open(DATA_FILE_PATH, "w") as f:
         f.close()
 
-    with open(data_path, "wb") as f:
+    with open(DATA_FILE_PATH, "wb") as f:
       pickle.dump(self.options, f)
 
 
@@ -297,7 +293,6 @@ class CrosshairApp(QApplication):
       return
 
     if option == "weapon_display_type":
-
       setattr(self.options, option, new_val)
     elif option == "custom_apply_groups":
       (name, weapons) = new_val
