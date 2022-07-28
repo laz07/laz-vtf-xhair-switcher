@@ -1,4 +1,5 @@
-# laz-vtf-crosshair-selector
+# laz-vtf-crosshair-switcher
+![crosshair_ICXozgybYe](https://user-images.githubusercontent.com/109486500/180332700-27332f20-12e4-49a9-8c26-b7cb4a4a237a.png)
 
 # Version
 3.0
@@ -8,7 +9,7 @@
 Download the latest .exe and run it.
 
 # Build
-If you want to build the code yourself, make sure you have Python 3.7 and pip3 installed.
+If you want to build the code yourself, make sure you have Python 3.10 and pip3 installed.
 Clone the repo, cd into it, and type
 
 ```
